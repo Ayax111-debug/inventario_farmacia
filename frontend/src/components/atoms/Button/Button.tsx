@@ -1,0 +1,57 @@
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
+import { cn } from "../../../lib/utils" // Asegúrate de que esta ruta apunte a tu utils.ts
+
+// 1. Aquí definimos todas las variantes con 'cva'
+const buttonVariants = cva(
+  // Clases base (siempre aplicadas)
+  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  {
+    variants: {
+      variant: {
+        default: "bg-slate-900 text-slate-50 hover:bg-slate-900/90", // Negro/Gris oscuro
+        destructive: "bg-red-500 text-slate-50 hover:bg-red-500/90", // Rojo error
+        outline: "border border-slate-200 bg-white hover:bg-slate-100 hover:text-slate-900", // Borde gris
+        secondary: "bg-slate-100 text-slate-900 hover:bg-slate-100/80", // Gris clarito
+        ghost: "hover:bg-slate-100 hover:text-slate-900", // Transparente
+        link: "text-slate-900 underline-offset-4 hover:underline", // Parece enlace
+      },
+      size: {
+        default: "h-10 px-4 py-2",
+        sm: "h-9 rounded-md px-3",
+        lg: "h-11 rounded-md px-8",
+        icon: "h-10 w-10",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)
+
+// 2. Definimos la interfaz combinando props de HTML y nuestras variantes
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean
+}
+
+// 3. El componente final
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    // Si asChild es true, el botón se comporta como el componente hijo (ej: un enlace)
+    const Comp = asChild ? Slot : "button"
+    return (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
+Button.displayName = "Button"
+
+export { Button, buttonVariants }
