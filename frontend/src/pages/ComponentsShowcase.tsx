@@ -1,9 +1,16 @@
 import { Button } from "../components/atoms/Button"; // Ajusta la ruta si es necesario
 import { Input } from "../components/atoms/Input";
 import { LoginForm } from "../components/organisms/LoginForm";
+import { MainTemplate } from "../components/templates/MainTemplate";
+
+
 export const ComponentsShowcase = () => {
     return (
-        <div className="min-h-screen bg-slate-50 p-10 font-sans text-slate-900">
+
+        <MainTemplate>
+            
+
+            <div className="min-h-screen bg-slate-50 p-10 font-sans text-slate-900">
 
             <div className="mx-auto max-w-4xl space-y-12">
 
@@ -158,5 +165,8 @@ export const ComponentsShowcase = () => {
                 </section>
             </div>
         </div>
+        </MainTemplate>
+
+        
     );
 };

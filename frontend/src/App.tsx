@@ -1,14 +1,16 @@
 import { ComponentsShowcase } from './pages/ComponentsShowcase'
 import { LoginPage } from './pages/LoginPage'
-
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 
 function App() {
   return (
-    <>
-      <ComponentsShowcase />
-      <LoginPage />
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path='/' element= {<LoginPage/>} />
+        <Route path='/showcase' element= {<ComponentsShowcase/>} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 

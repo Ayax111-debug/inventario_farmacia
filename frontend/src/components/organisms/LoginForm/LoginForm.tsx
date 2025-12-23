@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "../../atoms/Button";
 import { FormField } from "../../molecules/FormField";
 import { authService } from "../../../services/auth.service"; // Importamos el servicio
+import { useNavigate } from "react-router-dom";
 
 export const LoginForm = () => {
   const [username, setUsername] = useState(""); // Django usa username por defecto
@@ -9,6 +10,7 @@ export const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(""); // Mensaje de éxito
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,9 +24,11 @@ export const LoginForm = () => {
       
       // 2. Si pasa, mostramos éxito
       setSuccess("¡Login Exitoso! Bienvenido al sistema.");
-      
+      localStorage.setItem('username',username);
       // Aquí redirigiríamos en el futuro...
       
+      navigate('/showcase')
+
     } catch (err: any) {
       // 3. Si falla, mostramos el error
       console.error(err);
