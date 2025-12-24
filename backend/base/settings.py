@@ -133,11 +133,9 @@ AUTH_USER_MODEL ='modulo_principal.UsuarioCustom'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'modulo_principal.authentication.CustomJWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        # Opcional: Esto hace que TODAS las vistas requieran login por defecto.
-        # Si prefieres dejarlo abierto y cerrar una por una, usa 'AllowAny'.
         'rest_framework.permissions.IsAuthenticated',
     ),
 }
@@ -147,4 +145,15 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY':SECRET_KEY,
+    'AUTH_HEADER_TYPES':('Bearer',),
 }
+
+
+AUTH_COOKIE = 'access_token'
+AUTH_COOKIE_REFRESH = 'refresh_token'
+AUTH_COOKIE_SECURE = False #Poner en True en futuro al usar Https
+AUTH_COOKIE_HTTP_ONLY = True
+AUTH_COOKIE_PATH = '/'
+AUTH_COOKIE_SAMESITE = 'Strict'
