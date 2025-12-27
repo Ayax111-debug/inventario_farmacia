@@ -1,5 +1,5 @@
 import {useState, useEffect } from 'react';
-
+import { LogoutButton } from '../../molecules/LogoutBtn';
 
 export const Navbar = () =>{
     const[initial, setInitial] = useState("U");
@@ -25,7 +25,8 @@ export const Navbar = () =>{
                 <span className='text-sm text-slate-500 mr-2'>Bienvenido, {name}</span>
                 <div className='w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold shadow-md'>
                     {initial}
-                </div>
+                </div> 
+                <LogoutButton></LogoutButton>
             </div>
         </nav>        
     );

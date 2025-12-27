@@ -19,14 +19,12 @@ export const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      // 1. Llamamos al servicio (Backend real)
+      
       await authService.login(username, password);
       
-      // 2. Si pasa, mostramos éxito
-      setSuccess("¡Login Exitoso! Bienvenido al sistema.");
       localStorage.setItem('username',username);
-      // Aquí redirigiríamos en el futuro...
-      
+      setSuccess("¡Login Exitoso! Bienvenido al sistema.");
+
       navigate('/showcase')
 
     } catch (err: any) {

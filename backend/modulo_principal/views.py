@@ -8,10 +8,13 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.conf import settings
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from rest_framework.permissions import AllowAny
+
 
 #aqui estoy trabajando la serialización del modelo de usuario
 #vista para definir el uso de crear o leer el usuario
 class UsuarioViewSet(viewsets.ModelViewSet):
+
     queryset = UsuarioCustom.objects.all()
     
     def get_serializer_class(self):
@@ -24,7 +27,7 @@ class UsuarioViewSet(viewsets.ModelViewSet):
 
 
 #trabajando con la modificación del guardado de tokens de JWT
-
+#vistas para obtener y refrescar el token jwt
 class CookieTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
 
@@ -39,6 +42,7 @@ class CookieTokenObtainPairView(TokenObtainPairView):
             response.set_cookie(
                 key=settings.AUTH_COOKIE,
                 value=access_token,
+                domain="127.0.0.1",
                 httponly=settings.AUTH_COOKIE_HTTP_ONLY,
                 secure=settings.AUTH_COOKIE_SECURE,
                 samesite=settings.AUTH_COOKIE_SAMESITE,
@@ -48,6 +52,7 @@ class CookieTokenObtainPairView(TokenObtainPairView):
             response.set_cookie(
                 key=settings.AUTH_COOKIE_REFRESH,
                 value=refresh_token,
+                domain="127.0.0.1",
                 httponly=settings.AUTH_COOKIE_HTTP_ONLY,
                 secure=settings.AUTH_COOKIE_SECURE,
                 samesite=settings.AUTH_COOKIE_SAMESITE,
@@ -67,39 +72,54 @@ class CookieTokenObtainPairView(TokenObtainPairView):
 
 
 class CookieTokenRefreshView(TokenRefreshView):
-    def post(self, request, *args,**kwargs):
-        
+    def post(self, request, *args, **kwargs):
+      
         refresh_token = request.COOKIES.get(settings.AUTH_COOKIE_REFRESH)
-
+        
+    
+        mutable_data = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
+        
         if refresh_token:
-            request.data['refresh'] = refresh_token
-
-        response = super().post(request,*args,**kwargs)
-
-        if response.status_code == 200:
-            access_token = response.data.get('access')
-
-            response.set_cookie(
-                key=settings.AUTH_COOKIE,
-                value=access_token,
-                httponly=settings.AUTH_COOKIE_HTTP_ONLY,
-                secure=settings.AUTH_COOKIE_SECURE,
-                samesite=settings.AUTH_COOKIE_SAMESITE,
-                path=settings.AUTH_COOKIE_PATH
+            mutable_data['refresh'] = refresh_token
+        else:
+          
+            return Response(
+                {"detail": "No se encontró la cookie 'refresh_token'."}, 
+                status=status.HTTP_400_BAD_REQUEST
             )
 
-            
+        serializer = self.get_serializer(data=mutable_data)
 
-            del response.data['access']
-            if 'refresh' in response.data:
-                del response.data['refresh']
+        try:
+            serializer.is_valid(raise_exception=True)
+        except TokenError as e:
+            raise InvalidToken(e.args[0])
 
-            response.data['message'] = 'Token refrescado exitosamente'
+        response = Response(serializer.validated_data, status=status.HTTP_200_OK)
 
-        return response
+     
+        access_token = serializer.validated_data.get('access')
+        response.set_cookie(
+            key=settings.AUTH_COOKIE,
+            value=access_token,
+            domain="127.0.0.1", 
+            httponly=settings.AUTH_COOKIE_HTTP_ONLY,
+            secure=settings.AUTH_COOKIE_SECURE,
+            samesite=settings.AUTH_COOKIE_SAMESITE,
+            path=settings.AUTH_COOKIE_PATH,
+        )
+
         
+        del response.data['access']
+        if 'refresh' in response.data:
+            del response.data['refresh']
+
+        response.data['message'] = 'Sesión renovada'
+        return response
 
 class LogoutView(APIView):
+    permission_classes =[AllowAny]
+
     def post(self, request):
         response = Response({"message":"Logout exitoso"},status=status.HTTP_200_OK)
 
