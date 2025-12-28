@@ -5,6 +5,7 @@ from .views import UsuarioViewSet
 
 router = DefaultRouter()
 
+#api de usuarios
 router.register(r'usuarios',UsuarioViewSet, basename = 'usuario')
 
 urlpatterns = [

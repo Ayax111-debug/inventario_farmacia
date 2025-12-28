@@ -1,34 +1,44 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "../../atoms/Button";
 import { FormField } from "../../molecules/FormField";
-import { authService } from "../../../services/auth.service"; // Importamos el servicio
+import { authService } from "../../../services/auth.service";
 
-export const LoginForm = () => {
-  const [username, setUsername] = useState(""); // Django usa username por defecto
+// 1. Definimos la "puerta de entrada" para la función del padre
+interface LoginFormProps {
+  onLoginSuccess: () => void;
+}
+
+// 2. Recibimos la prop desestructurada
+export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(""); // Mensaje de éxito
+  
+  // Nota: Quitamos 'success' y 'useNavigate'. 
+  // Si el login es exitoso, el redireccionamiento será tan rápido que el usuario
+  // no alcanzará a leer un mensaje de éxito.
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setSuccess("");
     setIsLoading(true);
 
     try {
-      // 1. Llamamos al servicio (Backend real)
+      // A. Login en el Backend (Cookies HttpOnly)
       await authService.login(username, password);
       
-      // 2. Si pasa, mostramos éxito
-      setSuccess("¡Login Exitoso! Bienvenido al sistema.");
-      
-      // Aquí redirigiríamos en el futuro...
-      
+      // B. Guardamos el nombre para UX (opcional, pero útil)
+      localStorage.setItem('username', username);
+
+      // C. ¡MOMENTO CLAVE!
+      // En vez de navegar nosotros, le avisamos a App.tsx
+      // App.tsx actualizará el estado 'user' y el <Navigate /> de las rutas actuará solo.
+      onLoginSuccess();
+
     } catch (err: any) {
-      // 3. Si falla, mostramos el error
       console.error(err);
-      setError("Login Fallido: Usuario o contraseña incorrectos.");
+      setError("Credenciales incorrectas o error de servidor.");
     } finally {
       setIsLoading(false);
     }
@@ -45,7 +55,6 @@ export const LoginForm = () => {
       </div>
 
       <div className="flex flex-col gap-4">
-        {/* Usamos username en vez de email porque Django AbstractUser usa username */}
         <FormField
           label="Nombre de Usuario"
           placeholder="Ej: admin"
@@ -64,16 +73,9 @@ export const LoginForm = () => {
         />
       </div>
 
-      {/* ZONA DE MENSAJES */}
       {error && (
         <div className="p-3 text-sm text-red-500 bg-red-50 rounded-md border border-red-200">
           {error}
-        </div>
-      )}
-      
-      {success && (
-        <div className="p-3 text-sm text-green-600 bg-green-50 rounded-md border border-green-200 font-medium">
-          {success}
         </div>
       )}
 
