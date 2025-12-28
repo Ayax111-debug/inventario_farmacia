@@ -9,7 +9,7 @@ from rest_framework import status
 from django.conf import settings
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework.permissions import AllowAny
-
+from rest_framework.permissions import IsAuthenticated
 
 #aqui estoy trabajando la serialización del modelo de usuario
 #vista para definir el uso de crear o leer el usuario
@@ -24,7 +24,13 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         
         return UsuarioListaSerializer
 
+#vista para mantener autenticado al usuario
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
 
+    def get(self, request):
+        serializer = UsuarioListaSerializer(request.user)
+        return Response(serializer.data)
 
 #trabajando con la modificación del guardado de tokens de JWT
 #vistas para obtener y refrescar el token jwt

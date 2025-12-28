@@ -1,8 +1,7 @@
 import { Button } from "../components/atoms/Button"; // Ajusta la ruta si es necesario
 import { Input } from "../components/atoms/Input";
-import { LoginForm } from "../components/organisms/LoginForm";
 import { MainTemplate } from "../components/templates/MainTemplate";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import api from "../api/axios";
 
 export const ComponentsShowcase = () => {
@@ -174,18 +173,7 @@ export const ComponentsShowcase = () => {
 
                         </div>
                     </section>
-                    {/* SECCIÓN 6: ORGANISMOS */}
-                    <section className="space-y-6 pt-10 border-t pb-20">
-                        <h2 className="text-xl font-semibold">6. Organism (LoginForm)</h2>
-                        <p className="text-sm text-slate-500">
-                            Componente completo con lógica de estado y validación básica.
-                        </p>
-
-                        <div className="flex justify-center bg-slate-100 p-10 rounded-xl">
-                            {/* Aquí está tu obra maestra */}
-                            <LoginForm />
-                        </div>
-                    </section>
+                 
                 </div>
             </div>
         </MainTemplate>

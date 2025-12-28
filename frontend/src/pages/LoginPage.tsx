@@ -1,10 +1,15 @@
 import { AuthTemplate } from "../components/templates/AuthTemplate";
 import { LoginForm } from "../components/organisms/LoginForm";
 
-export const LoginPage = () => {
+
+interface LoginPageProps {
+    onLoginSuccess: () => void;
+}
+
+export const LoginPage = ({onLoginSuccess}:LoginPageProps) => {
   return (
     <AuthTemplate>
-      <LoginForm />
+      <LoginForm onLoginSuccess={onLoginSuccess}/>
     </AuthTemplate>
   );
 };

@@ -19,12 +19,7 @@ export const authService = {
 
 
   checkAuth: async () => {
-    try {
-      await api.post('/token/refresh/');
-      return true;
-
-    }catch {
-      return false;
-    }
+    const response = await api.get('/me/');
+    return response.data;
   }
 };
