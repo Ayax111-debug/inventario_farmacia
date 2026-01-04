@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
+import  LaboratoriosPage  from './pages/LaboratoriosPage';
 import { ComponentsShowcase } from './pages/ComponentsShowcase';
 import { authService } from './services/auth.service'; // Tu función que llama a /api/me/
+import { Navbar } from './components/organisms/Navbar';
+
 
 function App() {
   const [user, setUser] = useState(null);
@@ -48,6 +51,11 @@ function App() {
 
   return (
     <BrowserRouter>
+
+    {user && <Navbar />} 
+
+      <div className={user ? "pt-4" : ""}></div>
+
       <Routes>
         
         <Route 
@@ -62,6 +70,7 @@ function App() {
           path='/' 
           element={<Navigate to={user ? "/showcase" : "/login"} />} 
         />
+        <Route path="/laboratorios" element={<LaboratoriosPage />} />
       </Routes>
     </BrowserRouter>
   );

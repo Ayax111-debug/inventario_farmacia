@@ -18,12 +18,12 @@ class Laboratorio(models.Model):
 
 
 
-class Medicamento(models.Model):
+class Producto(models.Model):
    
     laboratorio = models.ForeignKey(
         Laboratorio, 
         on_delete=models.PROTECT, 
-        related_name="medicamentos"
+        related_name="productos"
     )
     
     nombre = models.CharField(max_length=200, db_index=True)
@@ -32,7 +32,7 @@ class Medicamento(models.Model):
     cantidad_capsulas = models.PositiveIntegerField(verbose_name="Unidades por Caja", help_text="Ej: 10, 20, 30 comprimidos")
     es_bioequivalente = models.BooleanField(default=False, verbose_name="Es Bioequivalente")
     codigo_serie = models.CharField(max_length=100, unique=True, verbose_name="Código de Barras / SKU")
-    precio_venta = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    precio_venta = models.PositiveIntegerField(default=0)
     activo = models.BooleanField(default=True)
 
     @property
@@ -47,14 +47,14 @@ class Medicamento(models.Model):
         return f"{self.nombre} {self.cantidad_mg}mg - {self.laboratorio.nombre}"
 
     class Meta:
-        verbose_name = "Medicamento"
+        verbose_name = "Producto"
         ordering = ['nombre']
 
 
 
 class Lote(models.Model):
-    medicamento = models.ForeignKey(
-        Medicamento, 
+    producto = models.ForeignKey(
+        Producto, 
         on_delete=models.CASCADE, 
         related_name="lotes" 
     )
@@ -82,5 +82,5 @@ class Lote(models.Model):
         super().save(*args, **kwargs)
 
     class Meta:
-        unique_together = ('medicamento', 'codigo_lote')
+        unique_together = ('producto', 'codigo_lote')
         ordering = ['fecha_vencimiento']

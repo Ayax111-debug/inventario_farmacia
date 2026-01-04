@@ -1,9 +1,9 @@
 from .usuarios import UsuarioCustom
-from .inventario import Laboratorio,Medicamento,Lote
+from .inventario import Laboratorio,Producto,Lote
 
 
 
 __all__ = [
     'UsuarioCustom','Laboratorio',
-    'Medicamento','Lote'
+    'Producto','Lote'
 ]

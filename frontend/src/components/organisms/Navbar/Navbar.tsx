@@ -1,5 +1,6 @@
 import {useState, useEffect } from 'react';
 import { LogoutButton } from '../../molecules/LogoutBtn';
+import { HamburgerMenu } from "../../molecules/HamburgerMenu";
 
 export const Navbar = () =>{
     const[initial, setInitial] = useState("U");
@@ -19,7 +20,7 @@ export const Navbar = () =>{
             <div className='text-lg font-bold text-slate-700'>
                 Inventario en creación por ayax :D
             </div>
-
+            <HamburgerMenu></HamburgerMenu>
 
             <div className='flex items-center gap-4'>
                 <span className='text-sm text-slate-500 mr-2'>Bienvenido, {name}</span>
