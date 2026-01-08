@@ -13,8 +13,3 @@ class UsuarioCustom(AbstractUser):
     def __str__(self):
         return f"{self.username}({self.get_full_name()})"
     
-
-
-
-
-
