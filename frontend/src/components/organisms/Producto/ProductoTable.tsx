@@ -1,0 +1,93 @@
+import { type Producto } from '../../../domain/models/Producto';
+
+interface Props {
+    data: Producto[];
+    onDelete: (id: number) => void;
+    onEdit: (prod: Producto) => void;
+}
+
+export const ProductoTable = ({ data, onDelete, onEdit }: Props) => {
+
+    // Helper para formatear dinero (CLP u otra moneda local)
+    const formatPrice = (price: number) => {
+        return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(price);
+    };
+
+    if (data.length === 0) {
+        return (
+            <div className="p-8 text-center bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                <p className="text-gray-500">No hay productos registrados en el inventario.</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+            <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU / Código</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
+                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {data.map((prod) => (
+                            <tr key={prod.id} className="hover:bg-gray-50 transition-colors">
+                                {/* Columna SKU */}
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">
+                                    {prod.codigo_serie}
+                                </td>
+
+                                {/* Columna Nombre y Descripción Corta */}
+                                <td className="px-6 py-4">
+                                    <div className="text-sm font-medium text-gray-900">{prod.nombre}</div>
+                                    <div className="text-xs text-gray-500">
+                                        {prod.cantidad_mg}mg - {prod.cantidad_capsulas} un. 
+                                        {/* Nota: Aquí mostramos el ID del lab por ahora. Idealmente traer el nombre */}
+                                        <span className="ml-1 text-blue-500">(Lab ID: {prod.laboratorio})</span>
+                                    </div>
+                                </td>
+
+                                {/* Columna Precio */}
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">
+                                    {formatPrice(prod.precio_venta)}
+                                </td>
+
+                                {/* Columna Estado (Badge) */}
+                                <td className="px-6 py-4 whitespace-nowrap text-center">
+                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        ${prod.activo 
+                                            ? 'bg-green-100 text-green-800' 
+                                            : 'bg-red-100 text-red-800'}`
+                                    }>
+                                        {prod.activo ? 'Activo' : 'Inactivo'}
+                                    </span>
+                                </td>
+
+                                {/* Columna Acciones */}
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <button 
+                                        onClick={() => onEdit(prod)}
+                                        className="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded mr-2 transition"
+                                    >
+                                        Editar
+                                    </button>
+                                    <button 
+                                        onClick={() => prod.id && onDelete(prod.id)}
+                                        className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded transition"
+                                    >
+                                        Eliminar
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};

@@ -13,6 +13,9 @@ class ProductoListadoSerializer(serializers.ModelSerializer):
             'laboratorio',
             'laboratorio_nombre',
             'nombre',
+            'codigo_serie',
+            'cantidad_mg',
+            'cantidad_capsulas',
             'es_bioequivalente',
             'precio_venta',
             'activo'

@@ -37,6 +37,22 @@ export const useLaboratorios = () => {
         }
     };
 
+    const actualizarLaboratorio = async (id: number, lab: Laboratorio) => {
+        try {
+            await laboratorioService.update(id, lab);
+            
+            setLaboratorios(prev => prev.map(item => 
+                item.id === id ? { ...item, ...lab } : item
+            ));
+            
+            return true;
+        } catch (err) {
+            setError('Error al actualizar el laboratorio');
+            return false;
+        }
+    };
+
+
     const eliminarLaboratorio = async (id: number) => {
         try {
             await laboratorioService.delete(id);
@@ -53,6 +69,7 @@ export const useLaboratorios = () => {
         error,
         crearLaboratorio,
         eliminarLaboratorio,
+        actualizarLaboratorio,
         refetch: fetchLaboratorios
     };
 };

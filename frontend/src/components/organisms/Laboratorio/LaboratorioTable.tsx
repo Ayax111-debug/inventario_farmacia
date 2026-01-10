@@ -3,9 +3,10 @@ import { type Laboratorio } from '../../../domain/models/laboratorio';
 interface Props {
     data: Laboratorio[];
     onDelete: (id: number) => void;
+    onEdit: (lab: Laboratorio) => void;
 }
 
-export const LaboratorioTable = ({ data, onDelete }: Props) => {
+export const LaboratorioTable = ({ data, onDelete, onEdit}: Props) => {
     
     if (data.length === 0) {
         return (
@@ -40,6 +41,12 @@ export const LaboratorioTable = ({ data, onDelete }: Props) => {
                                     {lab.direccion || <span className="text-gray-300 italic">Sin dirección</span>}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                     <button 
+                                        onClick={() => onEdit(lab)}
+                                        className="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded mr-2 transition"
+                                    >
+                                        Editar
+                                    </button>
                                     <button 
                                         onClick={() => lab.id && onDelete(lab.id)}
                                         className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded transition"

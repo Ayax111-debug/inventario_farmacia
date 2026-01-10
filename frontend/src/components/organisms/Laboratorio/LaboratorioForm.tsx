@@ -1,29 +1,41 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect,type FormEvent } from 'react';
 import  { type Laboratorio}  from '../../../domain/models/laboratorio';
 
 interface Props {
     // El componente padre decide qué hacer al guardar (POST API, log, etc)
     onSubmit: (lab: Laboratorio) => Promise<boolean | void>;
+    initialData?:Laboratorio | null;
+    onCancel?: () => void;
 }
 
-export const LaboratorioForm = ({ onSubmit }: Props) => {
+export const LaboratorioForm = ({ onSubmit, initialData, onCancel }: Props) => {
     const initialState = { nombre: '', direccion: '', telefono: '' };
     const [form, setForm] = useState<Laboratorio>(initialState);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+     useEffect(() => {
+        if (initialData) {
+            setForm(initialData);
+        } else {
+            setForm(initialState);
+        }
+    }, [initialData]);
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         if (!form.nombre.trim()) return;
 
         setIsSubmitting(true);
-        // Esperamos a que el padre termine su proceso
+       
         const success = await onSubmit(form);
         setIsSubmitting(false);
 
-        // Si el padre retorna true (éxito), limpiamos el form
         if (success) {
             setForm(initialState);
         }
+
+        
+        
     };
 
     return (
@@ -60,6 +72,16 @@ export const LaboratorioForm = ({ onSubmit }: Props) => {
                 >
                     {isSubmitting ? 'Guardando...' : 'Guardar'}
                 </button>
+                 {onCancel && (
+                        <button
+                            type="button"
+                            onClick={() => { setForm(initialState); onCancel(); }}
+                            className="px-4 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+                            disabled={isSubmitting}
+                        >
+                            Cancelar
+                        </button>
+                    )}
             </form>
         </div>
     );
