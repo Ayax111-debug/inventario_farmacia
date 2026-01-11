@@ -1,13 +1,17 @@
 import api from '../api/axios';
-import {type Producto } from '../domain/models/Producto';
+import {type Producto, type PaginatedResponse} from '../domain/models/Producto';
 
 
 const ENDPOINT = '/productos/';
 
 export const productoService = {
-    getAll: async () => {
+    getAll: async (page:number=1): Promise<PaginatedResponse<Producto>> => {
        
-        const response = await api.get<Producto[]>(ENDPOINT);
+        const response = await api.get<PaginatedResponse<Producto>>(ENDPOINT,{
+            params:{
+                page:page
+            }
+        });
         return response.data;
     },
 

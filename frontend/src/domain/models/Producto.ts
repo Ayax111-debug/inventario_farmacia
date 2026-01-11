@@ -10,3 +10,9 @@ export interface Producto{
     precio_venta: number;
     activo: boolean;
 }
+export interface PaginatedResponse<T> {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: T[];
+}

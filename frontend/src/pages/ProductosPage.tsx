@@ -6,6 +6,7 @@ import { ProductoTable } from '../components/organisms/Producto/ProductoTable';
 import { MainTemplate } from '../components/templates/MainTemplate';
 import { Modal } from '../components/molecules/Modal';
 import { type Producto } from '../domain/models/Producto';
+import {Paginator} from '../components/molecules/Paginator'
 
 const ProductosPage = () => {
     // 1. Extraemos la lógica del Hook
@@ -13,6 +14,7 @@ const ProductosPage = () => {
         productos, 
         loading, 
         error, 
+        pagination,
         crearProducto, 
         eliminarProducto,
         actualizarProducto,
@@ -97,6 +99,14 @@ const ProductosPage = () => {
                     data={productos} 
                     onDelete={eliminarProducto} 
                     onEdit={handleEdit}
+                />
+                <Paginator 
+                currentPage={pagination.page}
+                totalPages={pagination.totalPages}
+                onNext={pagination.nextPage}
+                onPrev={pagination.prevPage}
+                hasNext={pagination.hasNext}
+                hasPrev={pagination.hasPrev}
                 />
 
                 {/* Modal con Formulario */}

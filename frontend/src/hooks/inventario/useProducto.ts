@@ -7,11 +7,16 @@ export const useProductos = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
+    const PAGE_SIZE = 10;
+
     const fetchProductos = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await productoService.getAll();
-            setProductos(data);
+            const data = await productoService.getAll(page);
+            setProductos(data.results);
+            setTotalPages(Math.ceil(data.count / PAGE_SIZE));
             setError(null);
         } catch (err) {
             console.error(err);
@@ -19,7 +24,7 @@ export const useProductos = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [page]);
 
     useEffect(() => {
         fetchProductos();
@@ -62,6 +67,15 @@ export const useProductos = () => {
         productos,
         loading,
         error,
+        pagination: {
+            page,
+            setPage,
+            totalPages,
+            hasNext: page < totalPages,
+            hasPrev: page > 1,
+            nextPage: () => setPage(p => Math.min(p + 1, totalPages)),
+            prevPage: () => setPage(p => Math.max(p - 1, 1))
+        },
         crearProducto,
         actualizarProducto,
         eliminarProducto,

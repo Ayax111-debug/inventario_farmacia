@@ -53,16 +53,7 @@ export const LaboratorioForm = ({ onSubmit, initialData, onCancel }: Props) => {
                         disabled={isSubmitting}
                     />
                 </div>
-                <div className="flex-1 w-full">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Dirección (Opcional)</label>
-                    <input 
-                        className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
-                        placeholder="Ej: Av. Siempre Viva 123"
-                        value={form.direccion}
-                        onChange={e => setForm({...form, direccion: e.target.value})}
-                        disabled={isSubmitting}
-                    />
-                </div>
+            
                 <button 
                     type="submit" 
                     disabled={isSubmitting}

@@ -1,13 +1,18 @@
 import api from '../api/axios';
-import {type Lotes } from '../domain/models/Lotes';
+import type { Laboratorio } from '../domain/models/laboratorio';
+import {type Lotes,type PaginatedResponse } from '../domain/models/Lotes';
 
 
 const ENDPOINT = '/lotes/';
 
 export const loteService = {
-    getAll: async () => {
+    getAll: async (page: number = 1): Promise<PaginatedResponse<Lotes>> => {
         
-        const response = await api.get<Lotes[]>(ENDPOINT);
+        const response = await api.get<PaginatedResponse<Lotes>>(ENDPOINT,{
+            params: {
+                page:page
+            }
+        });
         return response.data;
     },
 

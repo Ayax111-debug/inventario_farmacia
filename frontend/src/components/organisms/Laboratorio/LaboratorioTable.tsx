@@ -24,7 +24,6 @@ export const LaboratorioTable = ({ data, onDelete, onEdit}: Props) => {
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dirección</th>
                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                         </tr>
                     </thead>
@@ -37,9 +36,7 @@ export const LaboratorioTable = ({ data, onDelete, onEdit}: Props) => {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                     {lab.nombre}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {lab.direccion || <span className="text-gray-300 italic">Sin dirección</span>}
-                                </td>
+                               
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                      <button 
                                         onClick={() => onEdit(lab)}

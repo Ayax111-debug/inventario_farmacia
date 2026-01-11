@@ -12,6 +12,7 @@ class UsuarioViewSet(viewsets.ModelViewSet):
     authentication_classes = []#quitar en produccion
 
     queryset = UsuarioCustom.objects.all()
+    pagination_class = None
 
     def get_serializer_class(self):
         

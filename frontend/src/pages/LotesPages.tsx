@@ -6,12 +6,14 @@ import { LoteTable } from '../components/organisms/Lotes/LoteTable';
 import { MainTemplate } from '../components/templates/MainTemplate';
 import { Modal } from '../components/molecules/Modal';
 import { type Lotes } from '../domain/models/Lotes';
+import { Paginator } from '../components/molecules/Paginator'; 
 
 const LotesPage = () => {
     const { 
         lotes, 
         loading: loadingLotes, 
         error: errorLotes, 
+        pagination,
         crearLote, 
         eliminarLote, 
         actualizarLote 
@@ -93,6 +95,14 @@ const LotesPage = () => {
                     onDelete={eliminarLote}
                     onEdit={handleEdit}
                 />
+                <Paginator 
+                            currentPage={pagination.page}
+                            totalPages={pagination.totalPages}
+                            onNext={pagination.nextPage}
+                            onPrev={pagination.prevPage}
+                            hasNext={pagination.hasNext}
+                            hasPrev={pagination.hasPrev}
+                        />
 
                 <Modal
                     isOpen={isModalOpen}

@@ -5,9 +5,14 @@ import {type Laboratorio,type PaginatedResponse } from '../domain/models/laborat
 const ENDPOINT = '/laboratorios/';
 
 export const laboratorioService = {
-    getAll: async () => {
+    getAll: async (page:number = 1): Promise<PaginatedResponse<Laboratorio>> => {
        
-        const response = await api.get<Laboratorio[]>(ENDPOINT);
+        const response = await api.get<PaginatedResponse<Laboratorio>>(ENDPOINT,{
+            params: {
+                page:page
+            }
+        });
+        
         return response.data;
     },
 

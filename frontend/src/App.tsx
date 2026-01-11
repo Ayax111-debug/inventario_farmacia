@@ -52,7 +52,7 @@ function App() {
   return (
     <BrowserRouter>
 
-      <div className={user ? "pt-4" : ""}></div>
+      
 
       <Routes>
         
