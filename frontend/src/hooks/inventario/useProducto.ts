@@ -42,6 +42,7 @@ export const useProductos = () => {
     };
 
     const actualizarProducto = async (id: number, prod: Producto) => {
+        setLoading(true);
         try {
             await productoService.update(id, prod);
             setProductos(prev => prev.map(item => 
@@ -51,6 +52,8 @@ export const useProductos = () => {
         } catch (err) {
             setError('Error al actualizar producto');
             return false;
+        }finally{
+        setLoading(false)
         }
     };
 

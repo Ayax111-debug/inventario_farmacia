@@ -1,66 +1,86 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useProductos } from '../hooks/inventario/useProducto';
-import {useLaboratorios} from '../hooks/inventario/useLaboratorio';
+import { useLaboratorios } from '../hooks/inventario/useLaboratorio';
 import { ProductoForm } from '../components/organisms/Producto/ProductoForm';
 import { ProductoTable } from '../components/organisms/Producto/ProductoTable';
 import { MainTemplate } from '../components/templates/MainTemplate';
 import { Modal } from '../components/molecules/Modal';
 import { type Producto } from '../domain/models/Producto';
-import {Paginator} from '../components/molecules/Paginator'
+import { Paginator } from '../components/molecules/Paginator';
+import { productoService } from '../services/producto.service'; 
 
 const ProductosPage = () => {
-    // 1. Extraemos la lógica del Hook
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // Hooks simples, sin lógica extraña
     const { 
-        productos, 
-        loading, 
-        error, 
-        pagination,
-        crearProducto, 
-        eliminarProducto,
-        actualizarProducto,
+        productos, loading, pagination,
+        crearProducto, eliminarProducto, actualizarProducto,
     } = useProductos();
 
-    const {laboratorios, loading: loadingLabs} = useLaboratorios();
+    const { laboratorios } = useLaboratorios();
 
-    // 2. Estados para el Modal y Edición
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProd, setEditingProd] = useState<Producto | null>(null);
+    const [fetchingSingle, setFetchingSingle] = useState(false); 
 
-    // 3. Handlers para abrir/cerrar modal
+    // --- LÓGICA DE URL (Para cargar producto al recargar página) ---
+    useEffect(() => {
+        const editId = searchParams.get('editar');
+        if (!editId) return;
+        
+        const idToFind = Number(editId);
+        const productoEnLista = productos.find(p => p.id === idToFind); 
+    
+
+        if (productoEnLista) {
+            setEditingProd(productoEnLista);
+            setIsModalOpen(true);
+        } else {
+            setFetchingSingle(true);
+            productoService.getById(idToFind)
+                .then((ProductoDesdeApi) => {
+                    setEditingProd(ProductoDesdeApi);
+                    setIsModalOpen(true);
+                })
+                .catch(() => setSearchParams({}))
+                .finally(() => setFetchingSingle(false));
+        }
+    }, [searchParams]);
+
+
+    // --- HANDLERS SIMPLES ---
     const handleCreate = () => {
-        setEditingProd(null); // Limpiamos para que sea uno nuevo
+        setEditingProd(null);
         setIsModalOpen(true);
+        setSearchParams({});
     };
 
     const handleEdit = (prod: Producto) => {
-        setEditingProd(prod); // Cargamos el producto a editar
+        if (!prod.id) return; 
+        setEditingProd(prod);
         setIsModalOpen(true);
+        setSearchParams({ editar: prod.id.toString() });
     };
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setEditingProd(null);
+        setSearchParams({}); 
     };
 
-    // 4. El Cerebro: Decide si crea o actualiza
     const handleSubmit = async (formData: Producto) => {
         let success = false;
-
         if (editingProd && editingProd.id) {
-            // EDITAR
             success = await actualizarProducto(editingProd.id, formData);
         } else {
-            // CREAR
             success = await crearProducto(formData);
         }
-
-        if (success) {
-            handleCloseModal();
-        }
+        if (success) handleCloseModal();
         return success;
     };
 
-    // 5. Loader
     if (loading && productos.length === 0) {
         return <div className="p-10 text-center text-blue-600 font-medium">Cargando inventario...</div>;
     }
@@ -68,61 +88,51 @@ const ProductosPage = () => {
     return (
         <MainTemplate>
             <div className="max-w-6xl mx-auto p-6">
-                
-                {/* Encabezado */}
                 <div className="flex justify-between items-center mb-8">
-                    <div className="flex items-center gap-3">
-                        <h1 className="text-3xl font-bold text-gray-800">Gestión de Productos</h1>
-                        <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
-                            Total: {productos.length}
-                        </span>
-                    </div>
-
-                    <button 
-                        onClick={handleCreate}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition flex items-center gap-2"
-                    >
-                        <span>+</span> Nuevo Producto
+                    <h1 className="text-3xl font-bold text-gray-800">Gestión de Productos</h1>
+                    <button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition">
+                        + Nuevo Producto
                     </button>
                 </div>
-                
-                {/* Manejo de Errores */}
-                {error && (
-                    <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm" role="alert">
-                        <p className="font-bold">Error del sistema</p>
-                        <p>{error}</p>
+                {fetchingSingle && (
+                    <div className="fixed top-20 right-6 bg-yellow-50 text-yellow-700 px-4 py-2 rounded-lg shadow-lg border border-yellow-200 text-sm animate-pulse z-50">
+                        ⏳ Cargando datos del lote...
                     </div>
                 )}
 
-                {/* Tabla */}
+
                 <ProductoTable 
                     data={productos} 
                     onDelete={eliminarProducto} 
                     onEdit={handleEdit}
                 />
+                
                 <Paginator 
-                currentPage={pagination.page}
-                totalPages={pagination.totalPages}
-                onNext={pagination.nextPage}
-                onPrev={pagination.prevPage}
-                hasNext={pagination.hasNext}
-                hasPrev={pagination.hasPrev}
+                    currentPage={pagination.page}
+                    totalPages={pagination.totalPages}
+                    onNext={pagination.nextPage}
+                    onPrev={pagination.prevPage}
+                    hasNext={pagination.hasNext}
+                    hasPrev={pagination.hasPrev}
                 />
 
-                {/* Modal con Formulario */}
                 <Modal
                     isOpen={isModalOpen}
                     onClose={handleCloseModal}
                     title={editingProd ? "Editar Producto" : "Registrar Nuevo Producto"}
                 >
-                    <ProductoForm 
-                        onSubmit={handleSubmit}
-                        initialData={editingProd}
-                        onCancel={handleCloseModal}
-                        listaLaboratorios={laboratorios}
-                    />
+                     {fetchingSingle ? (
+                        <div className="p-10 text-center">Cargando datos...</div>
+                    ) : (
+                        <ProductoForm 
+                            onSubmit={handleSubmit}
+                            initialData={editingProd}
+                            onCancel={handleCloseModal}
+                            
+                            listaLaboratorios={laboratorios} // Pasamos la lista normal
+                        />
+                    )}
                 </Modal>
-
             </div>
         </MainTemplate>   
     );

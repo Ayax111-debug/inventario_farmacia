@@ -26,10 +26,11 @@ export const HamburgerMenu = () => {
                     )}
                 </svg>
             </button>
+            
 
           
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-100 z-50 overflow-hidden">
+                <div className="absolute left-0 mt-5 w-56 bg-white rounded-lg shadow-xl border border-gray-100 z-50 overflow-hidden">
                     <ul className="flex flex-col py-2">
                         {NAV_LINKS.map((link) => (
                             <li key={link.path}>

@@ -1,5 +1,6 @@
 export interface Producto{
     laboratorio: number;
+    laboratorio_nombre: string;
     id?: number;
     nombre: string;
     descripcion: string;

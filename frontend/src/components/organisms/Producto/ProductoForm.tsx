@@ -15,6 +15,7 @@ export const ProductoForm = ({ onSubmit, initialData, onCancel, listaLaboratorio
     // Estado inicial: Activo empieza en true, números en 0
     const initialState: Producto = {
         laboratorio: 0,
+        laboratorio_nombre:'',
         nombre: '',
         descripcion: '',
         cantidad_mg: 0,
@@ -53,7 +54,21 @@ export const ProductoForm = ({ onSubmit, initialData, onCancel, listaLaboratorio
         }
 
         setIsSubmitting(true);
-        const success = await onSubmit(form);
+         const productoParaEnviar: Producto = {
+                    id: initialData?.id, // Mantenemos el ID si existe
+                    laboratorio: form.laboratorio,
+                    laboratorio_nombre: form.laboratorio_nombre,
+                    nombre: form.nombre,
+                    descripcion: form.descripcion,
+                    cantidad_mg: form.cantidad_mg,
+                    cantidad_capsulas: form.cantidad_capsulas,
+                    es_bioequivalente: form.es_bioequivalente,
+                    codigo_serie: form.codigo_serie,
+                    precio_venta: form.precio_venta,
+                    activo: form.activo,
+                };
+
+        const success = await onSubmit(productoParaEnviar);
         setIsSubmitting(false);
 
         if (success && !initialData) {
@@ -97,7 +112,17 @@ export const ProductoForm = ({ onSubmit, initialData, onCancel, listaLaboratorio
                     </div>
 
                     <div>
+                        <label className='block text-sm font-medium text-gray-700 mb-1'>id_laboratorio</label>
+                        <p className='mb-2 bg-grey'>
+                            {initialData && !listaLaboratorios.find(l => l.id === form.laboratorio) && (
+                                
+                                <option value={form.laboratorio}>
+                                 {form.laboratorio} 
+                                </option>
+                            )}
+                        </p>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Laboratorio *</label>
+                        
                         <select
                             className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none bg-white"
                             value={form.laboratorio} // El valor seleccionado es el ID (número)
@@ -107,6 +132,7 @@ export const ProductoForm = ({ onSubmit, initialData, onCancel, listaLaboratorio
                                 laboratorio: Number(e.target.value)
                             })}
                             required
+                            disabled={!!initialData}
                         >
                             <option value={0}>-- Seleccione un laboratorio --</option>
 
@@ -116,6 +142,12 @@ export const ProductoForm = ({ onSubmit, initialData, onCancel, listaLaboratorio
                                     {lab.nombre}
                                 </option>
                             ))}
+                            {initialData && !listaLaboratorios.find(l => l.id === form.laboratorio) && (
+                                
+                                <option value={form.laboratorio}>
+                                 {form.laboratorio_nombre} 
+                                </option>
+                            )}
                         </select>
                     </div>
 

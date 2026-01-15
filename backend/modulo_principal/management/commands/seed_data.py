@@ -4,100 +4,103 @@ from faker import Faker
 import random
 from datetime import timedelta
 from django.utils import timezone
-
-# IMPORTA TUS MODELOS AQUÍ (Ajusta la ruta según tu proyecto)
-from ...models import Laboratorio, Producto, Lote
-# Si tus modelos están en 'gestion.models', sería: from gestion.models import ...
+# CAMBIA ESTO POR TUS MODELOS REALES
+from modulo_principal.models import Laboratorio, Producto, Lote
 
 class Command(BaseCommand):
-    help = 'Puebla la base de datos con datos de prueba aleatorios (Seeding)'
+    help = 'Seed de alto rendimiento (Bulk Create)'
 
     def handle(self, *args, **kwargs):
-        self.stdout.write(self.style.WARNING('Iniciando proceso de Seeding...'))
-        
-        fake = Faker('es_CL') # Usamos localización de Chile para RUTs, nombres, etc.
+        fake = Faker('es_CL')
+        self.stdout.write(self.style.WARNING('Iniciando SEED MASIVO (Modo Turbo)...'))
 
-        # Usamos atomic para que si algo falla, no se guarde NADA (Todo o Nada)
-        try:
-            with transaction.atomic():
-                
-                # ==========================================
-                # 1. CREAR LABORATORIOS (50)
-                # ==========================================
-                self.stdout.write('Creando Laboratorios...')
-                labs_creados = []
-                for _ in range(50):
-                    lab = Laboratorio.objects.create(
-                        nombre=f"Laboratorio {fake.company()}",
+        # Cantidades
+        CANT_LABS = 1000       # No necesitas tantos laboratorios
+        CANT_PRODS = 50000     # 50k productos
+        CANT_LOTES = 150000    # 150k lotes (Total ~200k registros)
+
+        with transaction.atomic():
+            # ==========================================
+            # 1. LABORATORIOS (Bulk Create)
+            # ==========================================
+            self.stdout.write(f'Generando {CANT_LABS} laboratorios en memoria...')
+            labs_buffer = []
+            for _ in range(CANT_LABS):
+                labs_buffer.append(
+                    Laboratorio(
+                        nombre=f"Laboratorio {fake.unique.company()}",
                         direccion=fake.address(),
-                        telefono=fake.phone_number()[:15], # Cortamos por si es muy largo
+                        telefono=fake.phone_number()[:15]
                     )
-                    labs_creados.append(lab)
-                
-                self.stdout.write(self.style.SUCCESS(f'✓ {len(labs_creados)} Laboratorios creados.'))
+                )
+            
+            # INSERT MASIVO 1
+            Laboratorio.objects.bulk_create(labs_buffer, batch_size=1000)
+            self.stdout.write(self.style.SUCCESS('✓ Laboratorios insertados.'))
 
-                # ==========================================
-                # 2. CREAR PRODUCTOS (50)
-                # ==========================================
-                self.stdout.write('Creando Productos...')
-                productos_creados = []
-                nombres_medicina = ['Paracetamol', 'Ibuprofeno', 'Amoxicilina', 'Clorfenamina', 'Losartán', 'Metformina', 'Omeprazol', 'Salbutamol']
-                
-                for _ in range(50):
-                    # Elegimos un laboratorio al azar (FK)
-                    lab_random = random.choice(labs_creados)
-                    
-                    nombre_prod = f"{random.choice(nombres_medicina)} {fake.last_name()} Forte"
-                    
-                    prod = Producto.objects.create(
-                        laboratorio=lab_random, # Relación FK
+            # TRUCO PRO: Recuperamos solo los IDs para no llenar la RAM con objetos pesados
+            lab_ids = list(Laboratorio.objects.values_list('id', flat=True))
+
+            # ==========================================
+            # 2. PRODUCTOS (Bulk Create)
+            # ==========================================
+            self.stdout.write(f'Generando {CANT_PRODS} productos en memoria...')
+            prods_buffer = []
+            nombres_medicina = ['Paracetamol', 'Ibuprofeno', 'Amoxicilina', 'Clorfenamina', 
+                              'Losartán', 'Metformina', 'Omeprazol', 'Salbutamol']
+
+            for _ in range(CANT_PRODS):
+                # Asignamos ID directamente para evitar queries extra
+                lab_id = random.choice(lab_ids) 
+                nombre_prod = f"{random.choice(nombres_medicina)} {fake.last_name()} {random.randint(100,999)}"
+
+                prods_buffer.append(
+                    Producto(
+                        laboratorio_id=lab_id, # Usamos _id para asignar el entero directo
                         nombre=nombre_prod,
-                        descripcion=fake.text(max_nb_chars=100),
+                        descripcion=fake.text(max_nb_chars=60),
                         cantidad_mg=random.choice([10, 50, 100, 500, 1000]),
                         cantidad_capsulas=random.choice([10, 20, 30, 60]),
                         es_bioequivalente=random.choice([True, False]),
-                        codigo_serie=fake.ean13(), # Genera un código de barras real
+                        codigo_serie=fake.ean13(),
                         precio_venta=random.randint(1000, 25000),
                         activo=True
                     )
-                    productos_creados.append(prod)
+                )
 
-                self.stdout.write(self.style.SUCCESS(f'✓ {len(productos_creados)} Productos creados.'))
+            # INSERT MASIVO 2
+            Producto.objects.bulk_create(prods_buffer, batch_size=5000)
+            self.stdout.write(self.style.SUCCESS('✓ Productos insertados.'))
 
-                # ==========================================
-                # 3. CREAR LOTES (50)
-                # ==========================================
-                self.stdout.write('Creando Lotes...')
-                lotes_creados = []
-                
-                for _ in range(50):
-                    # Elegimos un producto al azar (FK)
-                    prod_random = random.choice(productos_creados)
-                    
-                    # Lógica de Fechas Coherente
-                    fecha_creacion = fake.date_between(start_date='-2y', end_date='today')
-                    # El vencimiento debe ser FUTURO respecto a la creación (ej. entre 1 y 3 años después)
-                    dias_vencimiento = random.randint(365, 1095) 
-                    fecha_vencimiento = fecha_creacion + timedelta(days=dias_vencimiento)
+            # Recuperamos IDs de productos
+            prod_ids = list(Producto.objects.values_list('id', flat=True))
 
-                    lote = Lote.objects.create(
-                        producto=prod_random, # Relación FK
-                        codigo_lote=f"L-{fake.bothify(text='????-####').upper()}", # Ej: L-ABSD-1234
+            # ==========================================
+            # 3. LOTES (Bulk Create)
+            # ==========================================
+            self.stdout.write(f'Generando {CANT_LOTES} lotes en memoria...')
+            lotes_buffer = []
+
+            for _ in range(CANT_LOTES):
+                prod_id = random.choice(prod_ids)
+                fecha_creacion = fake.date_between(start_date='-2y', end_date='today')
+                dias_vencimiento = random.randint(365, 1095)
+                fecha_vencimiento = fecha_creacion + timedelta(days=dias_vencimiento)
+
+                lotes_buffer.append(
+                    Lote(
+                        producto_id=prod_id,
+                        codigo_lote=f"L-{fake.bothify(text='????-####').upper()}",
                         fecha_creacion=fecha_creacion,
                         fecha_vencimiento=fecha_vencimiento,
                         cantidad=random.randint(50, 5000),
-                        defectuoso=random.choice([True, False, False, False]), # 25% prob de ser defectuoso
+                        defectuoso=random.choice([True, False, False, False]),
                         activo=True
                     )
-                    lotes_creados.append(lote)
+                )
 
-                self.stdout.write(self.style.SUCCESS(f'✓ {len(lotes_creados)} Lotes creados.'))
+            # INSERT MASIVO 3 (Aquí es donde Docker suele sufrir si no usas batch_size)
+            Lote.objects.bulk_create(lotes_buffer, batch_size=5000)
+            self.stdout.write(self.style.SUCCESS('✓ Lotes insertados.'))
 
-        except Exception as e:
-            self.stdout.write(self.style.ERROR(f'Error durante el seeding: {str(e)}'))
-            # Gracias a transaction.atomic, aquí se deshace todo automáticamente
-            return
-
-        self.stdout.write(self.style.SUCCESS('--------------------------------------'))
-        self.stdout.write(self.style.SUCCESS('¡SEEDING COMPLETADO EXITOSAMENTE! 🚀'))
-        self.stdout.write(self.style.SUCCESS('--------------------------------------'))
+        self.stdout.write(self.style.SUCCESS(f'🚀 SEED FINALIZADO: ~{CANT_LABS + CANT_PRODS + CANT_LOTES} registros creados.'))

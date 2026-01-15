@@ -3,31 +3,19 @@ from rest_framework import serializers
 
 
 #-------------------Productos-------------------------
-class ProductoListadoSerializer(serializers.ModelSerializer):
+
+
+class ProductoSerializer(serializers.ModelSerializer):
     laboratorio_nombre = serializers.CharField(source='laboratorio.nombre',read_only=True)
-
-    class Meta:
-        model = Producto
-        fields = [
-            'id',
-            'laboratorio',
-            'laboratorio_nombre',
-            'nombre',
-            'codigo_serie',
-            'cantidad_mg',
-            'cantidad_capsulas',
-            'es_bioequivalente',
-            'precio_venta',
-            'activo'
-        ]
-
-class ProductoCrearSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = Producto
         fields = '__all__'
 
 #---------------Lotes---------------------
 class LoteSerializer(serializers.ModelSerializer):
+    producto_nombre = serializers.CharField(source='producto.nombre', read_only=True)
+
     class Meta:
         model = Lote
         fields = '__all__'

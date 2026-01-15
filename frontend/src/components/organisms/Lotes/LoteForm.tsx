@@ -17,6 +17,7 @@ export const LoteForm = ({ onSubmit, initialData, onCancel, listaProductos }: Pr
     // Usamos 'any' temporalmente en el estado del form para facilitar el manejo de strings en lugar de Date objects.
     const initialState = {
         producto: 0,
+        producto_nombre:'',
         codigo_lote: '',
         fecha_creacion: new Date().toISOString().split('T')[0], // Hoy
         fecha_vencimiento: '', // Vacío inicialmente
@@ -58,6 +59,7 @@ export const LoteForm = ({ onSubmit, initialData, onCancel, listaProductos }: Pr
         const loteParaEnviar: Lotes = {
             id: initialData?.id, // Mantenemos el ID si existe
             producto: form.producto,
+            producto_nombre: form.producto_nombre,
             codigo_lote: form.codigo_lote,
             cantidad: form.cantidad,
             defectuoso: form.defectuoso,
@@ -100,6 +102,11 @@ export const LoteForm = ({ onSubmit, initialData, onCancel, listaProductos }: Pr
                                     {prod.nombre} (SKU: {prod.codigo_serie})
                                 </option>
                             ))}
+                            {initialData && !listaProductos.find(p => p.id === form.producto) && (
+                                <option value={form.producto}>
+                                    producto: {form.producto_nombre} 
+                                </option>
+                            )}
                         </select>
                     </div>
 

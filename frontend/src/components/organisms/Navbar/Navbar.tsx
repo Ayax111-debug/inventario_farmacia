@@ -1,6 +1,8 @@
 import {useState, useEffect } from 'react';
 import { LogoutButton } from '../../molecules/LogoutBtn';
 import { HamburgerMenu } from "../../molecules/HamburgerMenu";
+import { GlobalSearch } from '../GlobalSearch/GlobalSearch';
+
 
 export const Navbar = () =>{
     const[initial, setInitial] = useState("U");
@@ -17,10 +19,9 @@ export const Navbar = () =>{
 
     return (
         <nav className='w-full h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shadow-sm'>
-            <div className='text-lg font-bold text-slate-700'>
-                Inventario en creación por ayax :D
-            </div>
+            
             <HamburgerMenu></HamburgerMenu>
+            <GlobalSearch></GlobalSearch>
 
             <div className='flex items-center gap-4'>
                 <span className='text-sm text-slate-500 mr-2'>Bienvenido, {name}</span>

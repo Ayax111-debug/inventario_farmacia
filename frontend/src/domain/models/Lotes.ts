@@ -1,5 +1,6 @@
 export interface Lotes{
     producto: number;
+    producto_nombre:string;
     id?: number;
     codigo_lote: string;
     fecha_creacion: Date;

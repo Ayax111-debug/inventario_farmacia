@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://127.0.0.1:8000/api',
+    baseURL: 'http://localhost:8000/api',
     withCredentials: true, 
 });
 
@@ -16,7 +16,7 @@ api.interceptors.response.use(
 
             try {
                 await axios.post(
-                    'http://127.0.0.1:8000/api/token/refresh/',
+                    'http://localhost:8000/api/token/refresh/',
                     {}, 
                     { withCredentials: true }
                 );
