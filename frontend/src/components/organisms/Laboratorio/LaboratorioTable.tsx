@@ -1,4 +1,8 @@
 import { type Laboratorio } from '../../../domain/models/laboratorio';
+import { EditButton } from '../../atoms/Button/EditButton';
+import { DeleteButton } from '../../atoms/Button/DeleteButton';
+
+
 
 interface Props {
     data: Laboratorio[];
@@ -22,7 +26,7 @@ export const LaboratorioTable = ({ data, onDelete, onEdit}: Props) => {
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                            <th className=" px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                         </tr>
@@ -38,21 +42,14 @@ export const LaboratorioTable = ({ data, onDelete, onEdit}: Props) => {
                                 </td>
                                
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                     <button 
-                                        onClick={() => onEdit(lab)}
-                                        className="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded mr-2 transition"
-                                    >
-                                        Editar
-                                    </button>
-                                    <button 
-                                        onClick={() => lab.id && onDelete(lab.id)}
-                                        className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded transition"
-                                    >
-                                        Eliminar
-                                    </button>
+
+                                    <EditButton className='bg-blue-400 text-white hover:bg-blue-200 m-1' onClick={() => (onEdit(lab))}/>
+
+                                    <DeleteButton className='bg-red-400 text-white hover:bg-red-200'  onClick={() => lab.id && onDelete(lab.id)} />
+
                                 </td>
                             </tr>
-                        ))}
+                        ))} 
                     </tbody>
                 </table>
             </div>

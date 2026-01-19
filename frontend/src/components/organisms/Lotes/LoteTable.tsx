@@ -1,4 +1,7 @@
 import { type Lotes } from '../../../domain/models/Lotes';
+import { EditButton } from '../../atoms/Button/EditButton';
+import { DeleteButton } from '../../atoms/Button/DeleteButton';
+
 
 interface Props {
     data: Lotes[];
@@ -101,23 +104,10 @@ export const LoteTable = ({ data, onDelete, onEdit }: Props) => {
                                     </div>
                                 </td>
                                 <td className="p-4 text-right space-x-2">
-                                    <button 
-                                        onClick={() => onEdit(lote)}
-                                        className="text-indigo-600 hover:text-indigo-900 font-medium hover:underline transition"
-                                    >
-                                        Editar
-                                    </button>
-                                    <span className="text-gray-300">|</span>
-                                    <button 
-                                        onClick={() => {
-                                            if (window.confirm(`¿Estás seguro de eliminar el lote ${lote.codigo_lote}?`)) {
-                                                onDelete(lote.id!);
-                                            }
-                                        }}
-                                        className="text-red-600 hover:text-red-900 font-medium hover:underline transition"
-                                    >
-                                        Eliminar
-                                    </button>
+                                    <EditButton className='bg-blue-400 text-white hover:bg-blue-200 m-1' onClick={() => (onEdit(lote))}/>
+
+                                    <DeleteButton className='bg-red-400 text-white hover:bg-red-200'  onClick={() => lote.id && onDelete(lote.id)} />
+                                        
                                 </td>
                             </tr>
                         ))}

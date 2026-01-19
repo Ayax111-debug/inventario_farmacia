@@ -1,6 +1,7 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { type Lotes } from '../../../domain/models/Lotes';
 import { type Producto } from '../../../domain/models/Producto';
+import { SearchSelect } from '../../molecules/SearchSelect';
 
 interface Props {
     onSubmit: (lote: Lotes) => Promise<boolean | void>;
@@ -8,9 +9,10 @@ interface Props {
     onCancel?: () => void;
     // CORRECCIÓN: La lista es de PRODUCTOS, para poder seleccionar a qué producto pertenece el lote
     listaProductos: Producto[]; 
+    
 }
 
-export const LoteForm = ({ onSubmit, initialData, onCancel, listaProductos }: Props) => {
+export const LoteForm = ({ onSubmit, initialData, onCancel, listaProductos}: Props) => {
 
     // 1. ESTRATEGIA DE FECHAS:
     // Definimos el estado inicial con fechas en string (YYYY-MM-DD) para que los inputs HTML no fallen.
@@ -76,8 +78,10 @@ export const LoteForm = ({ onSubmit, initialData, onCancel, listaProductos }: Pr
         }
     };
 
+    
+
     return (
-        <div className="bg-white p-6 rounded-lg shadow-md mb-6 border border-gray-100">
+        <div className="bg-white p-6 rounded-lg mb-6 ">
             <h2 className="text-xl font-semibold mb-4 text-gray-800">
                 {initialData ? 'Editar Lote' : 'Registrar Nuevo Lote'}
             </h2>
@@ -88,26 +92,26 @@ export const LoteForm = ({ onSubmit, initialData, onCancel, listaProductos }: Pr
                     
                     {/* SELECCIONAR PRODUCTO */}
                     <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Producto Asociado *</label>
-                        <select
-                            className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none bg-white"
-                            value={form.producto}
-                            onChange={e => setForm({ ...form, producto: Number(e.target.value) })}
-                            required
-                            disabled={!!initialData} // Opcional: Bloquear cambio de producto si se está editando
-                        >
-                            <option value={0}>-- Seleccione un Producto --</option>
-                            {listaProductos.map((prod) => (
-                                <option key={prod.id} value={prod.id}>
-                                    {prod.nombre} (SKU: {prod.codigo_serie})
-                                </option>
-                            ))}
-                            {initialData && !listaProductos.find(p => p.id === form.producto) && (
-                                <option value={form.producto}>
-                                    producto: {form.producto_nombre} 
-                                </option>
-                            )}
-                        </select>
+                        <SearchSelect
+                            label="Producto"
+                            placeholder="Escribe para buscar un producto..."
+                            options={listaProductos
+                                // 1. Filtramos por seguridad (quitamos si alguno no tiene ID)
+                                .filter(prod => prod.id !== undefined)
+                                // 2. Mapeamos para cumplir estrictamente con la interfaz Option { id, nombre }
+                                .map(prod => ({
+                                    id: prod.id!, // El signo '!' fuerza a TS a entender que "aquí sí hay un número"
+                                    nombre: prod.nombre
+                                }))
+                            }// Pasas la lista completa de 100 labs
+                            selectedId={form.producto} // El ID seleccionado en tu estado
+                            onChange={(newId: number) => {
+                                // Actualizamos el estado del formulario con el ID seleccionado
+                                setForm({ ...form, producto: newId });
+                            }}
+                            disabled={!!initialData}
+                             // Opcional: si no quieres permitir cambiarlo al editar
+                        />
                     </div>
 
                     {/* CÓDIGO DE LOTE */}

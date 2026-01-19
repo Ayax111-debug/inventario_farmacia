@@ -10,6 +10,8 @@ import { Paginator } from '../components/molecules/Paginator';
 import { type Lotes } from '../domain/models/Lotes';
 // IMPORTANTE: Traemos el servicio directo para búsquedas individuales
 import { loteService } from '../services/lotes.service'; 
+import { AddButton } from '../components/atoms/Button/AddButton';
+import { useProductoSelect } from '../hooks/inventario/useProductoSelect';
 
 const LotesPage = () => {
     // 1. Hook para manipular la URL
@@ -27,7 +29,7 @@ const LotesPage = () => {
     } = useLotes();
 
     // Necesitamos los productos para el select del formulario
-    const { productos } = useProductos(); 
+    const { productos } = useProductoSelect(); 
 
     // 3. Estados locales
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -109,14 +111,9 @@ const LotesPage = () => {
             <div className="max-w-6xl mx-auto p-6">
                 
                 {/* Header */}
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-800">Gestión de Lotes</h1>
-                    <button 
-                        onClick={handleCreate}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow transition flex items-center gap-2"
-                    >
-                        <span>+</span> Nuevo Lote
-                    </button>
+                <div className="flex bg-white p-5 rounded-xl shadow-sm justify-between items-center mb-8">
+                    <h1 className="text-3xl font-bold text-gray-800">Lotes</h1>
+                    <AddButton label='Agregar Lote' onClick={handleCreate}/>
                 </div>
                 
                 {/* Feedback de carga individual (Opcional pero recomendado UX) */}
@@ -171,7 +168,8 @@ const LotesPage = () => {
                             onSubmit={handleSubmit}
                             initialData={editingLote}
                             onCancel={handleCloseModal}
-                            listaProductos={productos} // Pasamos la lista para el Select
+                            listaProductos={productos}
+                           // Pasamos la lista para el Select
                         />
                     )}
                 </Modal>

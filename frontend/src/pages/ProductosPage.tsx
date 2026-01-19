@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useProductos } from '../hooks/inventario/useProducto';
-import { useLaboratorios } from '../hooks/inventario/useLaboratorio';
 import { ProductoForm } from '../components/organisms/Producto/ProductoForm';
 import { ProductoTable } from '../components/organisms/Producto/ProductoTable';
 import { MainTemplate } from '../components/templates/MainTemplate';
@@ -9,6 +8,9 @@ import { Modal } from '../components/molecules/Modal';
 import { type Producto } from '../domain/models/Producto';
 import { Paginator } from '../components/molecules/Paginator';
 import { productoService } from '../services/producto.service'; 
+import { AddButton } from '../components/atoms/Button/AddButton';
+import { useLaboratoriosSelect } from '../hooks/inventario/useLaboratorioSelect'; 
+
 
 const ProductosPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -19,7 +21,7 @@ const ProductosPage = () => {
         crearProducto, eliminarProducto, actualizarProducto,
     } = useProductos();
 
-    const { laboratorios } = useLaboratorios();
+    const { laboratorios } = useLaboratoriosSelect();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProd, setEditingProd] = useState<Producto | null>(null);
@@ -88,17 +90,16 @@ const ProductosPage = () => {
     return (
         <MainTemplate>
             <div className="max-w-6xl mx-auto p-6">
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-800">Gestión de Productos</h1>
-                    <button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition">
-                        + Nuevo Producto
-                    </button>
+                <div className="flex bg-white p-5 rounded-xl shadow-sm justify-between items-center mb-8">
+                    <h1 className="text-3xl font-bold text-gray-800">Productos</h1>
+                    <AddButton label='Agregar Producto' onClick={handleCreate}/>
                 </div>
                 {fetchingSingle && (
                     <div className="fixed top-20 right-6 bg-yellow-50 text-yellow-700 px-4 py-2 rounded-lg shadow-lg border border-yellow-200 text-sm animate-pulse z-50">
                         ⏳ Cargando datos del lote...
                     </div>
                 )}
+
 
 
                 <ProductoTable 

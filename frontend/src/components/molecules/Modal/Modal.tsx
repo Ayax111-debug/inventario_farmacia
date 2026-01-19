@@ -7,7 +7,7 @@ interface Props {
     children: ReactNode;
 }
 
-export const Modal = ({ isOpen, onClose, title, children }: Props) => {
+export const Modal = ({ isOpen, onClose, title,  children }: Props) => {
     if (!isOpen) return null;
 
     return (
@@ -15,9 +15,7 @@ export const Modal = ({ isOpen, onClose, title, children }: Props) => {
             <div className="bg-white rounded-lg shadow-xl w-full max-w-lg overflow-hidden animate-fade-in">
                 
                 <div className="flex justify-between items-center p-4 border-b border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-800">
-                        {title}
-                    </h3>
+                    
                     <button
                         onClick={onClose}
                         className="text-gray-400 hover:text-gray-600 transition-colors text-2xl leading-none"

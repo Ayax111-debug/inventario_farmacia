@@ -39,7 +39,8 @@ export const LaboratorioForm = ({ onSubmit, initialData, onCancel }: Props) => {
     };
 
     return (
-        <div className="bg-white p-6 rounded-lg shadow-md mb-6 border border-gray-100">
+
+        <div className="bg-white p-6 rounded-lg mb-6 ">
             <h2 className="text-xl font-semibold mb-4 text-gray-800">Registrar Nuevo Laboratorio</h2>
             <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-4 items-end">
                 <div className="flex-1 w-full">

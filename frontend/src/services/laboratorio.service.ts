@@ -15,6 +15,10 @@ export const laboratorioService = {
         
         return response.data;
     },
+    getAllNoPagination: async(): Promise<Laboratorio[]> => {
+        const response = await api.get<Laboratorio[]>(`${ENDPOINT}simple_list/`);
+        return response.data;
+    },
 
     getById: async (id: number) => {
         const response = await api.get<Laboratorio>(`${ENDPOINT}${id}/`);

@@ -10,6 +10,7 @@ from ..serializers import (
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Q
+from rest_framework.decorators import action
 
 # ---------------------------------------------------------
 # 1. LABORATORIOS (El más simple)
@@ -21,10 +22,18 @@ class LaboratorioViewSet(viewsets.ModelViewSet):
     queryset = Laboratorio.objects.all()
     serializer_class = LaboratorioSerializer
    
-    
- 
     filter_backends = [filters.SearchFilter]
     search_fields = ['nombre']
+
+    @action(detail=False, methods=['get'], pagination_class=None)
+    def simple_list(self, request):
+       
+        laboratorios = self.get_queryset()
+        # Tip de optimización: Para un select solo necesitas ID y Nombre.
+        # Serializar todo es gastar recursos, pero por ahora usa tu serializer normal.
+        serializer = self.get_serializer(laboratorios, many=True)
+        return Response(serializer.data)
+
 
 
 # ---------------------------------------------------------
@@ -44,6 +53,14 @@ class ProductoViewSet(viewsets.ModelViewSet):
     
     ordering_fields = ['nombre', 'precio_venta', 'cantidad_mg']
     serializer_class = ProductoSerializer
+    @action(detail=False, methods=['get'], pagination_class=None)
+    def simple_list(self, request):
+       
+        data = self.get_queryset().values('id','nombre')
+        # Tip de optimización: Para un select solo necesitas ID y Nombre.
+        # Serializar todo es gastar recursos, pero por ahora usa tu serializer normal.
+        
+        return Response(list(data))
 
 
 # ---------------------------------------------------------

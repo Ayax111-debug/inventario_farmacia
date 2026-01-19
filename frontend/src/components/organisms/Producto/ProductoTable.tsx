@@ -1,4 +1,6 @@
 import { type Producto } from '../../../domain/models/Producto';
+import { EditButton } from '../../atoms/Button/EditButton';
+import { DeleteButton } from '../../atoms/Button/DeleteButton';
 
 interface Props {
     data: Producto[];
@@ -70,18 +72,9 @@ export const ProductoTable = ({ data, onDelete, onEdit }: Props) => {
 
                                 {/* Columna Acciones */}
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button 
-                                        onClick={() => onEdit(prod)}
-                                        className="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded mr-2 transition"
-                                    >
-                                        Editar
-                                    </button>
-                                    <button 
-                                        onClick={() => prod.id && onDelete(prod.id)}
-                                        className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded transition"
-                                    >
-                                        Eliminar
-                                    </button>
+                                    <EditButton className='bg-blue-400 text-white hover:bg-blue-200 m-1' onClick={() => (onEdit(prod))}/>
+
+                                    <DeleteButton className='bg-red-400 text-white hover:bg-red-200'  onClick={() => prod.id && onDelete(prod.id)} />
                                 </td>
                             </tr>
                         ))}

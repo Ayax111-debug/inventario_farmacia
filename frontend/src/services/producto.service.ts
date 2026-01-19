@@ -14,6 +14,10 @@ export const productoService = {
         });
         return response.data;
     },
+    getAllNoPagination: async(): Promise<Producto[]> => {
+        const response = await api.get<Producto[]>(`${ENDPOINT}simple_list/`);
+        return response.data;
+    },
 
     getById: async (id: number) => {
         const response = await api.get<Producto>(`${ENDPOINT}${id}/`);
