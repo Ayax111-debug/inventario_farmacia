@@ -1,150 +1,125 @@
 import { useState, useEffect, useRef } from 'react';
 
-// Exportamos la interfaz para poder usarla en el padre si es necesario
-export interface Option {
+// Asegúrate de que tus interfaces coincidan
+interface Option {
     id: number;
     nombre: string;
 }
 
 interface Props {
     label: string;
-    options: Option[];
-    selectedId: number;
-    onChange: (id: number) => void;
     placeholder?: string;
-    error?: string;
+    options: Option[];
+    selectedId: number | null | undefined;
+    onChange: (newId: number) => void;
     disabled?: boolean;
-   
+    
+    // --- NUEVO: Hacemos esta prop OPCIONAL ---
+    // Si se pasa, activamos el modo "Server-Side Search"
+    onInputChange?: (text: string) => void;
 }
 
 export const SearchSelect = ({ 
     label, 
+    placeholder, 
     options, 
     selectedId, 
     onChange, 
-    placeholder = "Buscar...", 
-    error,
     disabled = false,
-    
+    onInputChange // Recibimos la prop nueva
 }: Props) => {
+    
     const [isOpen, setIsOpen] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [query, setQuery] = useState('');
     const wrapperRef = useRef<HTMLDivElement>(null);
 
-    // 1. Encontrar la opción seleccionada actualmente
-    const selectedOption = options.find(opt => opt.id === selectedId);
-
-    // 2. Sincronizar el input cuando cambia la selección externa (props)
+    // Efecto para mostrar el nombre del item seleccionado cuando carga la data inicial
     useEffect(() => {
-        if (selectedOption) {
-            setSearchTerm(selectedOption.nombre);
-        } else {
-            setSearchTerm('');
+        if (selectedId) {
+            const selected = options.find(opt => opt.id === selectedId);
+            if (selected) {
+                setQuery(selected.nombre);
+            }
         }
-    }, [selectedId, selectedOption]);
+    }, [selectedId, options]);
 
-    // 3. Filtrado local (Client-Side)
-    // Nota: Si son 50.000 productos, esto podría causar lentitud. 
-    // Para listas gigantes se recomienda filtrado en servidor.
-    const filteredOptions = options.filter(opt => 
-        opt.nombre.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Lógica inteligente de filtrado
+    const filteredOptions = onInputChange 
+        ? options // MODO SERVIDOR: Mostramos lo que el padre nos mande tal cual
+        : query === '' // MODO CLIENTE (Antiguo): Filtramos localmente
+            ? options
+            : options.filter((opt) =>
+                opt.nombre.toLowerCase().includes(query.toLowerCase())
+              );
 
-    // 4. Manejo de clicks fuera del componente
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const text = e.target.value;
+        setQuery(text);
+        setIsOpen(true);
+
+        // Si el padre nos dio una función para buscar fuera, la ejecutamos
+        if (onInputChange) {
+            onInputChange(text);
+        }
+    };
+
+    const handleSelect = (option: Option) => {
+        setQuery(option.nombre);
+        onChange(option.id);
+        setIsOpen(false);
+    };
+
+    // Cerrar al hacer click fuera
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
-                // UX: Si el usuario escribió algo pero no seleccionó nada, revertimos al valor real
-                if (selectedOption) {
-                    setSearchTerm(selectedOption.nombre);
-                } else {
-                    setSearchTerm('');
-                }
+                // Si el usuario escribió algo que no es una opción válida, podrías resetear aquí
             }
         }
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [selectedOption]); // Dependencia importante para saber a qué valor revertir
-
-    const handleSelect = (option: Option) => {
-        onChange(option.id);
-        setSearchTerm(option.nombre);
-        setIsOpen(false);
-    };
+    }, [wrapperRef]);
 
     return (
         <div className="relative" ref={wrapperRef}>
             <label className="block text-sm font-medium text-gray-700 mb-1">
                 {label}
             </label>
-            
             <div className="relative">
                 <input
                     type="text"
+                    className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-100"
+                    placeholder={placeholder}
+                    value={query}
+                    onChange={handleInputChange}
+                    onClick={() => !disabled && setIsOpen(true)}
                     disabled={disabled}
-                 
-                    value={searchTerm}
-                    // Eventos
-                    onChange={(e) => {
-                        setSearchTerm(e.target.value);
-                        setIsOpen(true);
-                        // Si borra todo el texto, enviamos ID 0 (limpiar selección)
-                        if (e.target.value === '') onChange(0);
-                    }}
-                    onFocus={() => !disabled  && setIsOpen(true)}
-                    // Estilos dinámicos
-                    className={`
-                        w-full border p-2 pr-10 rounded outline-none transition-colors
-                        ${error 
-                            ? 'border-red-500 focus:ring-red-200' 
-                            : 'border-gray-300 focus:ring-2 focus:ring-blue-500'
-                        }
-                        ${(disabled ) 
-                            ? 'bg-gray-100 text-gray-500 cursor-not-allowed' 
-                            : 'bg-white text-gray-900'
-                        }
-                    `}
                 />
                 
-                {/* Icono de estado (Spinner o Flecha) */}
-                <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
-                    
-                        <svg className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-        
+                {/* Icono de flecha */}
+                <div className="absolute right-3 top-3 text-gray-400 pointer-events-none">
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                 </div>
             </div>
 
-            {/* Dropdown de Resultados */}
             {isOpen && !disabled && (
-                <ul className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto focus:outline-none">
+                <ul className="absolute z-10 w-full bg-white border border-gray-300 mt-1 max-h-60 overflow-y-auto rounded shadow-lg">
                     {filteredOptions.length > 0 ? (
-                        filteredOptions.map((option) => (
+                        filteredOptions.map((opt) => (
                             <li
-                                key={option.id}
-                                onClick={() => handleSelect(option)}
-                                className={`
-                                    px-4 py-2 cursor-pointer transition-colors text-sm
-                                    ${option.id === selectedId 
-                                        ? 'bg-blue-100 text-blue-700 font-medium' 
-                                        : 'text-gray-700 hover:bg-gray-100'
-                                    }
-                                `}
+                                key={opt.id}
+                                onClick={() => handleSelect(opt)}
+                                className="p-2 hover:bg-blue-100 cursor-pointer text-sm text-gray-700"
                             >
-                                {option.nombre}
+                                {opt.nombre}
                             </li>
                         ))
                     ) : (
-                        <li className="px-4 py-3 text-gray-500 text-sm text-center italic">
-                            No se encontraron resultados
-                        </li>
+                        <li className="p-2 text-gray-500 text-sm">No hay resultados</li>
                     )}
                 </ul>
             )}
-            
-            {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
         </div>
     );
 };
