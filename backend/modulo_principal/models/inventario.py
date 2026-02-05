@@ -31,13 +31,13 @@ class Producto(models.Model):
     cantidad_mg = models.PositiveIntegerField(verbose_name="Miligramos (mg)", help_text="Ej: 500 para 500mg")
     cantidad_capsulas = models.PositiveIntegerField(verbose_name="Unidades por Caja", help_text="Ej: 10, 20, 30 comprimidos")
     es_bioequivalente = models.BooleanField(default=False, verbose_name="Es Bioequivalente")
-    codigo_serie = models.CharField(max_length=100, unique=True, verbose_name="Código de Barras / SKU")
+    codigo_serie = models.CharField(max_length=13, unique=True, verbose_name="Código de Barras / SKU")
     precio_venta = models.PositiveIntegerField(default=0)
     activo = models.BooleanField(default=True)
 
     @property
     def stock_total(self):
-        return self.lotes.filter(
+        return self.lotes.filter( 
             activo=True, 
             defectuoso=False,
             cantidad__gt=0
