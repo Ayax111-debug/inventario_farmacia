@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 
@@ -10,6 +11,7 @@ class Laboratorio(models.Model):
 
     def __str__(self):
         return self.nombre
+    
 
     class Meta:
         verbose_name = "Laboratorio"
@@ -42,6 +44,10 @@ class Producto(models.Model):
             defectuoso=False,
             cantidad__gt=0
         ).aggregate(total=models.Sum('cantidad'))['total'] or 0
+    
+
+   
+
 
     def __str__(self):
         return f"{self.nombre} {self.cantidad_mg}mg - {self.laboratorio.nombre}"
@@ -71,12 +77,34 @@ class Lote(models.Model):
     defectuoso = models.BooleanField(default=False, help_text="Marcar si el lote tiene alerta sanitaria")
     activo = models.BooleanField(default=True, help_text="Desactiva el lote manualmente si es necesario")
 
+    def __init__(self,*args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.__original_producto_id = self.producto_id
+        self.__original_codigo_lote = self.codigo_lote
+
+
     def __str__(self):
         return f"Lote {self.codigo_lote} - Vence: {self.fecha_vencimiento}"
 
-    
+
+    def clean(self):
+        if self.pk:
+            original = Lote.objects.only('producto_id','codigo_lote').get(pk=self.pk)
+            errors = {}
+
+            if original.producto_id != self.producto_id:
+                errors['producto'] = "Denegado: No puedes cambiar el producto de un lote asociado"
+
+            if original.codigo_lote != self.codigo_lote:
+                errors['lote'] = "Denegado: No puedes cambiar el codigo de un lote con productos asociados"
+
+            if errors:
+                raise ValidationError(errors)
+
     def save(self, *args, **kwargs):
-       
+        self.full_clean()
+
         if self.defectuoso:
             self.activo = False
         super().save(*args, **kwargs)
