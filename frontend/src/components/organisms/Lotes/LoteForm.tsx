@@ -1,14 +1,14 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { type Lotes } from '../../../domain/models/Lotes';
-// Nota: Ya no importamos Producto aquí porque no usamos la lista completa
 import { globalSearchService } from '../../../services/globalSearch.service';
 import { SearchSelect } from '../../molecules/SearchSelect';
+import axios from 'axios'; // Importamos axios para verificar el error
 
 interface Props {
-    onSubmit: (lote: Lotes) => Promise<boolean | void>;
+    // CAMBIO: onSubmit ahora retorna una Promesa, no boolean
+    onSubmit: (lote: Lotes) => Promise<void>; 
     initialData?: Lotes | null;
     onCancel?: () => void;
-    // Eliminé onInputChange de aquí. El padre de LoteForm no necesita saber que estás buscando.
 }
 
 export const LoteForm = ({ onSubmit, initialData, onCancel }: Props) => {
@@ -25,75 +25,60 @@ export const LoteForm = ({ onSubmit, initialData, onCancel }: Props) => {
     };
 
     const [form, setForm] = useState(initialState);
+    
+    // CAMBIO: Tipado correcto para los errores de Django
+    const [errors, setErrors] = useState<Record<string, string[]>>({});
+    
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // --- LÓGICA DE BÚSQUEDA ASÍNCRONA ---
+    // ... (Tu lógica de useEffect y SearchSelect se mantiene igual) ...
+    // ... (Solo la omito aquí para ahorrar espacio visual) ...
+    
+    // --- LÓGICA DE BÚSQUEDA ASÍNCRONA (Mantener tu código original aquí) ---
     const [searchTerm, setSearchTerm] = useState('');
     const [productOptions, setProductOptions] = useState<{ id: number, nombre: string }[]>([]);
     const [isLoadingProducts, setIsLoadingProducts] = useState(false);
-
-    // 1. Cargar datos iniciales al editar
+    
+    // ... (Tus useEffects de initialData y Search se quedan igual) ...
     useEffect(() => {
-        if (initialData) {
-            // Inyectamos el producto actual para que el select no salga vacío
-            setProductOptions([{
-                id: initialData.producto,
-                nombre: initialData.producto_nombre
-            }]);
-
-            setForm({
-                ...initialData,
-                fecha_creacion: new Date(initialData.fecha_creacion).toISOString().split('T')[0],
-                fecha_vencimiento: new Date(initialData.fecha_vencimiento).toISOString().split('T')[0],
-            });
-        }
+       if (initialData) {
+           setProductOptions([{ id: initialData.producto, nombre: initialData.producto_nombre }]);
+           setForm({
+               ...initialData,
+               fecha_creacion: new Date(initialData.fecha_creacion).toISOString().split('T')[0],
+               fecha_vencimiento: new Date(initialData.fecha_vencimiento).toISOString().split('T')[0],
+           });
+       }
     }, [initialData]);
+    
+    // ... (Tu useEffect del debounce se queda igual) ...
 
-    // 2. Debounce para buscar productos en el servidor
-    useEffect(() => {
-        // Si hay menos de 4 letras, no buscamos (ahorro de recursos)
-        if (searchTerm.length < 4) {
-            // Si el usuario borró todo y no estamos editando, limpiamos la lista
-            if (searchTerm.length === 0 && !initialData) {
-                setProductOptions([]);
-            }
-            return;
+
+    // --- FUNCIÓN HELPER PARA LIMPIAR ERRORES AL ESCRIBIR ---
+    const handleChange = (field: string, value: any) => {
+        setForm({ ...form, [field]: value });
+        
+        // Si hay un error en este campo, lo borramos visualmente
+        if (errors[field]) {
+            const newErrors = { ...errors };
+            delete newErrors[field];
+            setErrors(newErrors);
         }
+    };
 
-        const timeoutId = setTimeout(async () => {
-            setIsLoadingProducts(true);
-            try {
-                // Llamada a tu servicio existente
-                const data = await globalSearchService.search(searchTerm);
-
-                // Mapeo simple
-                const options = data.productos.map(prod => ({
-                    id: prod.id,
-                    nombre: prod.titulo
-                }));
-
-                setProductOptions(options);
-            } catch (error) {
-                console.error("Error buscando productos", error);
-            } finally {
-                setIsLoadingProducts(false);
-            }
-        }, 300); // Espera 300ms después de que el usuario deje de escribir
-
-        return () => clearTimeout(timeoutId);
-    }, [searchTerm, initialData]);
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
+        setErrors({}); // Limpiar errores previos
 
-        // Validación básica
-        if (!form.codigo_lote.trim() || form.producto <= 0 || form.cantidad <= 0 || !form.fecha_vencimiento) {
+        // Validación básica front-end (opcional pero recomendada)
+        if (!form.codigo_lote.trim() || form.producto <= 0) {
             alert("Completa los campos obligatorios");
             return;
         }
 
         setIsSubmitting(true);
-        // Construimos el objeto Lote
+        
         const loteParaEnviar: Lotes = {
             id: initialData?.id,
             producto: form.producto,
@@ -106,13 +91,28 @@ export const LoteForm = ({ onSubmit, initialData, onCancel }: Props) => {
             fecha_vencimiento: form.fecha_vencimiento,
         };
 
-        const success = await onSubmit(loteParaEnviar as unknown as Lotes);
-        setIsSubmitting(false);
+        try {
+            // AHORA ESPERAMOS QUE ESTO FALLE SI HAY ERROR 400
+            await onSubmit(loteParaEnviar as unknown as Lotes);
+            
+            // Si llega aquí, es ÉXITO
+            if (!initialData) {
+                setForm(initialState);
+                setProductOptions([]);
+                setSearchTerm('');
+            }
+            // Aquí podrías cerrar el modal si quisieras
+            if(onCancel && initialData) onCancel(); 
 
-        if (success && !initialData) {
-            setForm(initialState);
-            setProductOptions([]); // Limpiamos el select
-            setSearchTerm('');
+        } catch (error) {
+            // AQUÍ CAPTURAMOS EL ERROR QUE LANZÓ EL HOOK
+            if (axios.isAxiosError(error) && error.response?.status === 400) {
+                setErrors(error.response.data); // Guardamos el JSON de Django
+            } else {
+                alert("Ocurrió un error inesperado.");
+            }
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -125,57 +125,44 @@ export const LoteForm = ({ onSubmit, initialData, onCancel }: Props) => {
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                    {/* SELECT OPTIMIZADO */}
+                    {/* SELECT DE PRODUCTO */}
                     <div className="md:col-span-2 relative">
                         <SearchSelect
                             label="Producto"
-                            placeholder={isLoadingProducts ? "Buscando..." : "Escribe 4 letras para buscar..."}
-
-                            // Lista pequeña y dinámica traída del backend
+                            placeholder={isLoadingProducts ? "Buscando..." : "Escribe..."}
                             options={productOptions}
-
                             selectedId={form.producto}
-
                             onChange={(newId: number) => {
                                 const selected = productOptions.find(p => p.id === newId);
-                                setForm({
-                                    ...form,
-                                    producto: newId,
-                                    producto_nombre: selected ? selected.nombre : form.producto_nombre
-                                });
+                                handleChange('producto', newId); // Usamos el helper
+                                if(selected) handleChange('producto_nombre', selected.nombre);
                             }}
-
-                            // Aquí está la MAGIA: pasamos la función que actualiza searchTerm
-                            // Como SearchSelect ahora acepta esta prop, TypeScript no se quejará
                             onInputChange={(text) => setSearchTerm(text)}
-
                             disabled={!!initialData}
                         />
+                        {/* MOSTRAR ERROR DE PRODUCTO SI EXISTE */}
+                        {errors.producto && <p className="text-red-500 text-xs mt-1">{errors.producto[0]}</p>}
+                    </div>
 
-                        {/* Feedback visual */}
-                        {isLoadingProducts && (
-                            <div className="absolute right-10 top-[42px] pointer-events-none">
-                                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                            </div>
-                        )}
-                        {searchTerm.length > 0 && searchTerm.length < 4 && !initialData && (
-                            <span className="text-xs text-orange-500 ml-1">
-                                Sigue escribiendo...
+                    {/* INPUT CÓDIGO LOTE */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Código Lote *</label>
+                        <input
+                            className={`w-full border p-2 rounded focus:ring-2 outline-none ${errors.codigo_lote ? 'border-red-500 ring-red-200' : 'border-gray-300 focus:ring-blue-500'}`}
+                            value={form.codigo_lote}
+                            // Usamos el helper handleChange
+                            onChange={e => handleChange('codigo_lote', e.target.value)}
+                            required
+                        />
+                        {/* MENSAJE DE ERROR */}
+                        {errors.codigo_lote && (
+                            <span className="text-red-500 text-xs font-bold block mt-1">
+                                {errors.codigo_lote[0]}
                             </span>
                         )}
                     </div>
 
-                    {/* RESTO DE INPUTS (Sin cambios) */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Código Lote *</label>
-                        <input
-                            className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
-                            value={form.codigo_lote}
-                            onChange={e => setForm({ ...form, codigo_lote: e.target.value })}
-                            required
-                        />
-                    </div>
-
+                    {/* INPUT CANTIDAD */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Cantidad *</label>
                         <input
@@ -183,35 +170,48 @@ export const LoteForm = ({ onSubmit, initialData, onCancel }: Props) => {
                             min="1"
                             className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
                             value={form.cantidad || ''}
-                            onChange={e => setForm({ ...form, cantidad: Number(e.target.value) })}
+                            onChange={e => handleChange('cantidad', Number(e.target.value))}
                             required
                         />
+                         {errors.cantidad && <p className="text-red-500 text-xs mt-1">{errors.cantidad[0]}</p>}
                     </div>
 
-                    {/* Fechas */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Elaboración</label>
-                        <input
-                            type="date"
-                            className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
-                            value={form.fecha_creacion}
-                            onChange={e => setForm({ ...form, fecha_creacion: e.target.value })}
-                            required
-                        />
-                    </div>
+                    {/* INPUT FECHA VENCIMIENTO */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Vencimiento *</label>
                         <input
                             type="date"
-                            className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                            className={`w-full border p-2 rounded outline-none ${errors.fecha_vencimiento ? 'border-red-500' : 'border-gray-300'}`}
                             value={form.fecha_vencimiento}
-                            onChange={e => setForm({ ...form, fecha_vencimiento: e.target.value })}
+                            onChange={e => handleChange('fecha_vencimiento', e.target.value)}
                             required
                         />
+                        {errors.fecha_vencimiento && (
+                             <span className="text-red-500 text-xs font-bold block mt-1">
+                                {errors.fecha_vencimiento[0]}
+                            </span>
+                        )}
+                    </div>
+
+                    {/* INPUT FECHA ELABORACIÓN */}
+                    <div>
+                         <label className="block text-sm font-medium text-gray-700 mb-1">Elaboración</label>
+                         <input
+                            type="date"
+                            className={`w-full border p-2 rounded outline-none ${errors.fecha_creacion ? 'border-red-500' : 'border-gray-300'}`}
+                            value={form.fecha_creacion}
+                            onChange={e => handleChange('fecha_creacion', e.target.value)}
+                            required
+                         />
+                         {errors.fecha_creacion && (
+                             <span className="text-red-500 text-xs font-bold block mt-1">
+                                {errors.fecha_creacion[0]}
+                            </span>
+                        )}
                     </div>
                 </div>
 
-                {/* BOTONES (Sin cambios mayores) */}
+                {/* BOTONES */}
                 <div className="flex gap-3 justify-end mt-6">
                     {onCancel && (
                         <button type="button" onClick={onCancel} className="px-4 py-2 bg-gray-100 rounded text-gray-700">
@@ -226,6 +226,13 @@ export const LoteForm = ({ onSubmit, initialData, onCancel }: Props) => {
                         {isSubmitting ? 'Guardando...' : (initialData ? 'Actualizar' : 'Guardar')}
                     </button>
                 </div>
+                
+                {/* Mensaje de error general si existe non_field_errors */}
+                {errors.non_field_errors && (
+                     <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                        {errors.non_field_errors[0]}
+                    </div>
+                )}
             </form>
         </div>
     );

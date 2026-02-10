@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom'; 
 import { useLotes } from '../hooks/inventario/useLotes';
-import { useProductos } from '../hooks/inventario/useProducto';
 import { LoteForm } from '../components/organisms/Lotes/LoteForm';
 import { LoteTable } from '../components/organisms/Lotes/LoteTable';
 import { MainTemplate } from '../components/templates/MainTemplate';
@@ -93,14 +92,21 @@ const LotesPage = () => {
     };
 
     const handleSubmit = async (formData: Lotes) => {
-        let success = false;
-        if (editingLote && editingLote.id) {
-            success = await actualizarLote(editingLote.id, formData);
-        } else {
-            success = await crearLote(formData);
-        }
-        if (success) handleCloseModal();
-        return success;
+    // Ya no usamos try/catch aquí, porque LoteForm se encarga de atrapar el error
+    // para mostrar los mensajes rojos.
+    
+    if (editingLote && editingLote.id) {
+        await actualizarLote(editingLote.id, formData);
+    } else {
+        await crearLote(formData);
+    }
+
+    // Si la línea de arriba NO lanzó error, significa que todo salió bien.
+    // Cerramos el modal inmediatamente.
+    handleCloseModal();
+    
+    // Retornamos una promesa vacía para cumplir con la firma
+    return Promise.resolve();
     };
 
     // ---------------------------------------------
@@ -168,8 +174,8 @@ const LotesPage = () => {
                             onSubmit={handleSubmit}
                             initialData={editingLote}
                             onCancel={handleCloseModal}
-                            listaProductos={productos}
-                           // Pasamos la lista para el Select
+                            
+                           
                         />
                     )}
                 </Modal>
