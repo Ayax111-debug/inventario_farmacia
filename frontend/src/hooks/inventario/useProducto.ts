@@ -1,43 +1,58 @@
 import { useState, useEffect, useCallback } from 'react';
 import { type Producto } from '../../domain/models/Producto';
-import { productoService } from '../../services/producto.service'
+import { productoService } from '../../services/producto.service';
+import axios from 'axios';
 
-export const useProductos = () => {
+// 1. Aceptamos los filtros como argumento opcional
+export const useProductos = (filters: Record<string, any> = {}) => {
     const [productos, setProductos] = useState<Producto[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
+    const [globalError, setGlobalError] = useState<string | null>(null);
 
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const PAGE_SIZE = 10;
 
-    const fetchProductos = useCallback(async () => {
+    // 2. fetchProductos ahora depende de 'page' y 'filters'
+    const fetchProductos = useCallback(async (currentPage: number, currentFilters: any) => {
         setLoading(true);
+        setGlobalError(null);
         try {
-            const data = await productoService.getAll(page);
+            // Pasamos ambos parámetros al servicio
+            const data = await productoService.getAll(currentPage, currentFilters);
             setProductos(data.results);
             setTotalPages(Math.ceil(data.count / PAGE_SIZE));
-            setError(null);
+            
         } catch (err) {
             console.error(err);
-            setError('Error al cargar productos');
+            setGlobalError('Error al cargar el catálogo de productos');
         } finally {
             setLoading(false);
         }
-    }, [page]);
+    }, []);
 
+    // 3. Resetear a página 1 cuando el usuario cambia los filtros
     useEffect(() => {
-        fetchProductos();
-    }, [fetchProductos]);
+        setPage(1);
+    }, [filters]);
+
+    // 4. Efecto principal: reacciona a página y filtros
+    useEffect(() => {
+        fetchProductos(page, filters);
+    }, [page, filters, fetchProductos]);
 
     const crearProducto = async (prod: Producto) => {
         try {
             await productoService.create(prod);
-            await fetchProductos();
+            // Re-fetech para asegurar que el ordenamiento del backend (sanos primero) se mantenga
+            await fetchProductos(page, filters);
             return true;
         } catch (err) {
-            setError('Error al crear producto');
-            return false;
+            if (axios.isAxiosError(err) && err.response?.status === 400){
+                throw err; // El Formulario se encarga de mostrar estos errores
+            }
+            setGlobalError('Error crítico al crear el producto');
+            throw err;
         }
     };
 
@@ -45,35 +60,45 @@ export const useProductos = () => {
         setLoading(true);
         try {
             await productoService.update(id, prod);
-            setProductos(prev => prev.map(item => 
-                item.id === id ? { ...item, ...prod } : item
-            ));
+            // Es mejor re-fetchear porque los cambios pueden afectar el stock_total (propiedad calculada)
+            await fetchProductos(page, filters);
             return true;
         } catch (err) {
-            setError('Error al actualizar producto');
-            return false;
-        }finally{
-        setLoading(false)
+            if (axios.isAxiosError(err) && err.response?.status === 400){
+                throw err;
+            }
+            setGlobalError('Error crítico al actualizar el producto');
+            throw err;
+        } finally {
+            setLoading(false);
         }
     };
 
     const eliminarProducto = async (id: number) => {
+        // Podrías añadir un confirm aquí si no lo tienes en el componente
         try {
             await productoService.delete(id);
-            setProductos(prev => prev.filter(p => p.id !== id));
+            // Si eliminamos el último de la página, fetchProductos lo manejará
+            await fetchProductos(page, filters);
         } catch (err) {
-            setError('Error al eliminar producto');
+            // Capturamos el error de protección de Django si tiene lotes
+            if (axios.isAxiosError(err) && err.response?.status === 403) {
+                 alert("No se puede eliminar: Este producto tiene lotes asociados.");
+            } else {
+                 setGlobalError('Error al eliminar producto');
+            }
         }
     };
 
+    // 5. Retornamos una interfaz de paginación consistente con useLotes
     return {
         productos,
         loading,
-        error,
+        error: globalError,
         pagination: {
             page,
-            setPage,
             totalPages,
+            goToPage: (num: number) => setPage(num), // Útil para el SmartFilter
             hasNext: page < totalPages,
             hasPrev: page > 1,
             nextPage: () => setPage(p => Math.min(p + 1, totalPages)),
@@ -82,6 +107,6 @@ export const useProductos = () => {
         crearProducto,
         actualizarProducto,
         eliminarProducto,
-        refetch: fetchProductos
+        refetch: () => fetchProductos(page, filters)
     };
 };

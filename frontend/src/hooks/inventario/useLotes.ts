@@ -1,83 +1,85 @@
 import { useState, useEffect, useCallback } from 'react';
 import { type Lotes } from '../../domain/models/Lotes';
 import { loteService } from '../../services/lotes.service';
-import axios from 'axios';
 
-export const useLotes = () => {
+// Aceptamos filtros opcionales
+export const useLotes = (filters: Record<string, any> = {}) => {
     const [lotes, setLotes] = useState<Lotes[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
-    // Este error es solo para errores GLOBALES (500, red, etc)
-    const [globalError, setGlobalError] = useState<string | null>(null);
-
-    // ... (paginación y fetchLotes igual que antes) ...
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    
+    // Estado de paginación
     const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(0);
-    const PAGE_SIZE = 10;
+    const [totalPages, setTotalPages] = useState(1);
+    const [hasNext, setHasNext] = useState(false);
+    const [hasPrev, setHasPrev] = useState(false);
 
-    const fetchLotes = useCallback(async () => {
+    // useCallback evita loops infinitos
+    const fetchLotes = useCallback(async (currentPage: number, currentFilters: any) => {
         setLoading(true);
+        setError(null);
         try {
-            const data = await loteService.getAll(page);
+            // Pasamos página Y filtros al servicio
+            const data = await loteService.getAll(currentPage, currentFilters);
+            
             setLotes(data.results);
-            setTotalPages(Math.ceil(data.count / PAGE_SIZE));
-            setGlobalError(null);
+            setTotalPages(Math.ceil(data.count / 10)); // Asumiendo page_size=10
+            setHasNext(!!data.next);
+            setHasPrev(!!data.previous);
         } catch (err) {
+            setError("Error al cargar los lotes");
             console.error(err);
-            setGlobalError('Error al cargar lotes');
         } finally {
             setLoading(false);
         }
-    }, [page]);
-    
-    useEffect(() => { fetchLotes(); }, [fetchLotes]);
+    }, []);
 
+    // EFECTO PRINCIPAL: Se dispara si cambia la página O los filtros
+    useEffect(() => {
+        fetchLotes(page, filters);
+    }, [page, filters, fetchLotes]); // <--- Aquí está la magia
 
-    // --- AQUÍ ESTÁ EL CAMBIO CLAVE ---
+    // Funciones de paginación
+    const nextPage = () => { if (hasNext) setPage(prev => prev + 1); };
+    const prevPage = () => { if (hasPrev) setPage(prev => prev - 1); };
+    const goToPage = (num: number) => setPage(num);
+
+    // CRUD (Crear, Actualizar, Eliminar) - Simplificados para el ejemplo
     const crearLote = async (lote: Lotes) => {
-        try {
-            await loteService.create(lote);
-            await fetchLotes();
-            // No retornamos true/false, si no falla, asumimos éxito
-        } catch (err) {
-            // Si es error de validación, LO LANZAMOS ARRIBA
-            if (axios.isAxiosError(err) && err.response?.status === 400) {
-                throw err; 
-            }
-            // Si es otro error, lo manejamos aquí
-            setGlobalError('Error crítico al crear el lote');
-            throw err; // También lo lanzamos para detener el formulario
-        }
+        await loteService.create(lote);
+        fetchLotes(page, filters); // Recargamos la lista
     };
 
-    const actualizarLote = async (id: number, prod: Lotes) => {
-        try {
-            await loteService.update(id, prod);
-            setLotes(prev => prev.map(item => 
-                item.id === id ? { ...item, ...prod } : item
-            ));
-        } catch (err) {
-            // RE-LANZAR EL ERROR para que LoteForm lo capture
-            throw err; 
-        }
+    const actualizarLote = async (id: number, lote: Lotes) => {
+        await loteService.update(id, lote);
+        fetchLotes(page, filters);
     };
 
     const eliminarLote = async (id: number) => {
+        if (!window.confirm("¿Seguro que deseas eliminar este lote?")) return;
         try {
             await loteService.delete(id);
-            setLotes(prev => prev.filter(p => p.id !== id));
-        } catch (err) {
-            setGlobalError('Error al eliminar lote');
+            fetchLotes(page, filters);
+        } catch (e) {
+            alert("No se pudo eliminar el lote (quizás tiene stock).");
         }
     };
 
     return {
         lotes,
         loading,
-        error: globalError, // Renombrado para claridad
-        pagination: { page, setPage, totalPages, hasNext: page < totalPages, hasPrev: page > 1, nextPage: () => setPage(p => Math.min(p + 1, totalPages)), prevPage: () => setPage(p => Math.max(p - 1, 1)) },
+        error,
         crearLote,
-        actualizarLote, // Nota: La firma ahora devuelve Promise<void> que puede fallar
+        actualizarLote,
         eliminarLote,
-        refetch: fetchLotes
+        pagination: {
+            page,
+            totalPages,
+            nextPage,
+            prevPage,
+            goToPage, // Importante para resetear a pág 1 al filtrar
+            hasNext,
+            hasPrev
+        }
     };
 };

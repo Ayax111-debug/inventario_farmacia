@@ -1,40 +1,36 @@
-import api from '../api/axios';
-import {type Producto, type PaginatedResponse} from '../domain/models/Producto';
+import axios from 'axios';
+import { type Producto } from '../domain/models/Producto';
 
-
-const ENDPOINT = '/productos/';
+const API_URL = 'http://localhost:8000/api/productos/';
 
 export const productoService = {
-    getAll: async (page:number=1): Promise<PaginatedResponse<Producto>> => {
-       
-        const response = await api.get<PaginatedResponse<Producto>>(ENDPOINT,{
-            params:{
-                page:page
+    // AHORA: acepta filtros
+    getAll: async (page: number = 1, filters: Record<string, any> = {}) => {
+        const response = await axios.get(API_URL, {
+            params: {
+                page,
+                ...filters // Aquí irán: laboratorio, activo, es_bioequivalente, etc.
             }
         });
         return response.data;
     },
-    getAllNoPagination: async(): Promise<Producto[]> => {
-        const response = await api.get<Producto[]>(`${ENDPOINT}simple_list/`);
+
+    getById: async (id: number): Promise<Producto> => {
+        const response = await axios.get(`${API_URL}${id}/`);
         return response.data;
     },
 
-    getById: async (id: number) => {
-        const response = await api.get<Producto>(`${ENDPOINT}${id}/`);
+    create: async (producto: Producto): Promise<Producto> => {
+        const response = await axios.post(API_URL, producto);
         return response.data;
     },
 
-    create: async (data: Producto) => {
-        const response = await api.post<Producto>(ENDPOINT, data);
+    update: async (id: number, producto: Producto): Promise<Producto> => {
+        const response = await axios.put(`${API_URL}${id}/`, producto);
         return response.data;
     },
 
-    update: async (id: number, data: Partial<Producto>) => {
-        const response = await api.patch<Producto>(`${ENDPOINT}${id}/`, data);
-        return response.data;
-    },
-
-    delete: async (id: number) => {
-        await api.delete(`${ENDPOINT}${id}/`);
+    delete: async (id: number): Promise<void> => {
+        await axios.delete(`${API_URL}${id}/`);
     }
 };

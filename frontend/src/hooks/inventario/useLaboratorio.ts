@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { type Laboratorio } from '../../domain/models/laboratorio';
 import { laboratorioService } from '../../services/laboratorio.service';
+import axios from 'axios';
 
 export const useLaboratorios = () => {
     // 1. Estado de Datos
     const [laboratorios, setLaboratorios] = useState<Laboratorio[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
+    const [globalError, setGlobalError] = useState<string | null>(null);
 
     // 2. Estado de Paginación
     const [page, setPage] = useState(1);
@@ -23,10 +24,10 @@ export const useLaboratorios = () => {
             // Extraemos el array de 'results' y calculamos páginas totales
             setLaboratorios(data.results); 
             setTotalPages(Math.ceil(data.count / PAGE_SIZE));
-            setError(null);
+            setGlobalError(null);
         } catch (err) {
             console.error(err);
-            setError('Error al cargar laboratorios. Revisa la consola.');
+            setGlobalError('Error al cargar laboratorios. Revisa la consola.');
         } finally {
             setLoading(false);
         }
@@ -45,8 +46,10 @@ export const useLaboratorios = () => {
             await fetchLaboratorios(); // Recargamos para ver el nuevo item
             return true;
         } catch (err) {
-            setError('Error al crear');
-            return false;
+            if (axios.isAxiosError(err) && err.response?.status === 400){
+                throw(err)
+            }
+            setGlobalError("Error inesperado al actualizar")
         } finally {
             setLoading(false);
         }
@@ -59,8 +62,8 @@ export const useLaboratorios = () => {
             await fetchLaboratorios(); // Aseguramos consistencia con backend
             return true;
         } catch (err) {
-            setError('Error al actualizar el laboratorio');
-            return false;
+            throw(err)
+
         } finally {
             setLoading(false);
         }
@@ -78,10 +81,10 @@ export const useLaboratorios = () => {
             } else {
                 await fetchLaboratorios();
             }
-            return true;
+            
         } catch (err) {
-            setError('Error al eliminar');
-            return false;
+            setGlobalError('Error al eliminar');
+            
         } finally {
             setLoading(false);
         }
@@ -91,7 +94,7 @@ export const useLaboratorios = () => {
     return {
         laboratorios,
         loading,
-        error,
+        error: globalError,
         pagination: {
             page,
             setPage,
