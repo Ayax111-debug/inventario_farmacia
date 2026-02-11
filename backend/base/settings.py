@@ -7,12 +7,19 @@ from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-env = environ.Env()
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
-SECRET_KEY = env('SECRET_KEY')
-DEBUG = True
-ALLOWED_HOSTS = env.list('ALLOWED_HOST')
 
+env = environ.Env()
+
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+
+env_file = os.path.join(BASE_DIR, '.env')
+if os.path.exists(env_file):
+    environ.Env.read_env(env_file)
+
+SECRET_KEY = env('SECRET_KEY', default='clave-insegura-ci-test')
+DEBUG = True
+ALLOWED_HOSTS = env.list('ALLOWED_HOST', default=['127.0.0.1','localhost'])
 
 # Application definition
 
