@@ -155,6 +155,7 @@ class Lote(models.Model):
                 errors['fecha_creacion'] = "Denegado: No puedes cambiar la fecha de creación."
             if self.fecha_vencimiento != self._original_fecha_vencimiento:
                 errors['fecha_vencimiento'] = "Denegado: No puedes cambiar la fecha de vencimiento."
+       
 
             if errors:
                 raise ValidationError(errors)

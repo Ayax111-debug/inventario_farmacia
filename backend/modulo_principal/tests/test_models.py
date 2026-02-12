@@ -118,9 +118,21 @@ class TestLote:
     def test_create_lote_happy_path(self):
         # Forzamos defectuoso=False para asegurar que la regla de negocio 
         # no nos desactive el lote automáticamente.
+
+        producto = ProductoFactory(nombre="Paracetamol", activo = True)
+
+        fecha_actual = timezone.now()
         fecha_futura = timezone.now() + timedelta(days=365)
-        lote = LoteFactory(cantidad=100, defectuoso=False, fecha_vencimiento=fecha_futura) 
+        lote = LoteFactory(producto=producto,cantidad=100,activo=True, defectuoso=False, fecha_vencimiento=fecha_futura, fecha_creacion=fecha_actual) 
         
+        print(f"el estado del lote es:{lote.activo}")
+        print(f"El producto asociado al lote es:{lote.producto_id}")
+        print(f"La fecha de creación del lote es: {lote.fecha_creacion}")
+        print(f"La fecha de vencimiento del lote es: {lote.fecha_vencimiento}")
+        print(f"El codigo del lote es:{lote.codigo_lote}")
+        print(f"La cantidad del lote es de: {lote.cantidad}")
+       
+        assert lote.defectuoso is False
         assert lote.id is not None
         assert lote.activo is True
 
