@@ -2,7 +2,7 @@ name: Django CI
 
 on:
   push:
-    branches: [ "main", "develop" ]
+    branches: [ "main", "develop","feature/inventario" ]
   pull_request:
     branches: [ "main" ]
 
@@ -14,9 +14,9 @@ jobs:
       postgres:
         image: postgres:15 # Usa la versión que tengas instalada
         env:
-          POSTGRES_DB: db_test_farmacia
-          POSTGRES_USER: user_test
-          POSTGRES_PASSWORD: password_test
+          POSTGRES_DB: farma_db
+          POSTGRES_USER: ayax
+          POSTGRES_PASSWORD: Hunter1234
         ports:
           - 5432:5432
         # Esperar a que postgres esté listo antes de iniciar los tests
@@ -45,6 +45,6 @@ jobs:
       env:
         # Aquí puedes pasar variables de entorno necesarias para tus tests
         DEBUG: "False"
-        SECRET_KEY: "clave-insegura-ci-test"
+        SECRET_KEY: "django-insecure-h+&8x(z!v^p$7q_@)m4n%2k*l9j#1w-o5d3r=e0y^6t$b@f"
         ALLOWED_HOST: "localhost,127.0.0.1"
-        DATABASE_URL: "postgres://user_ci:password_ci@localhost:5432/db_ci"
+        DATABASE_URL: "postgres://ayax:Hunter1234@localhost:5432/farma_db"
