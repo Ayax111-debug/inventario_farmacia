@@ -1,0 +1,51 @@
+name: Django CI
+
+on:
+  push:
+    branches: [ "feature/inventario" ]
+  
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15 # Usa la versión que tengas instalada
+        env:
+          POSTGRES_DB: farma_db
+          POSTGRES_USER: ayax
+          POSTGRES_PASSWORD: Hunter1234
+        ports:
+          - 5432:5432
+        # Esperar a que postgres esté listo antes de iniciar los tests
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12.12' # Ajusta a tu versión
+
+    - name: Install Dependencies
+      working-directory: ./backend
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run Tests
+      working-directory: ./backend
+      run: |
+        pytest
+      env:
+        # Aquí puedes pasar variables de entorno necesarias para tus tests
+        DEBUG: "False"
+        SECRET_KEY: "django-insecure-h+&8x(z!v^p$7q_@)m4n%2k*l9j#1w-o5d3r=e0y^6t$b@f"
+        ALLOWED_HOST: "localhost,127.0.0.1"
+        DATABASE_URL: "postgres://ayax:Hunter1234@localhost:5432/farma_db"

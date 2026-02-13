@@ -1,4 +1,4 @@
-from .models import UsuarioCustom
+from ..models import UsuarioCustom
 from rest_framework import serializers
 
 class UsuarioListaSerializer(serializers.ModelSerializer):

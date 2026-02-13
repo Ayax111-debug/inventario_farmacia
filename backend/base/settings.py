@@ -3,25 +3,23 @@ import environ
 import os
 from datetime import timedelta
 
-env = environ.Env(
-    DEBUG=(bool,False)
-)
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+env = environ.Env()
+
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY')
 
-DEBUG = env('DEBUG')
+env_file = os.path.join(BASE_DIR, '.env')
+if os.path.exists(env_file):
+    environ.Env.read_env(env_file)
 
-# SECURITY WARNING: don't run with debug turned on in production!
+SECRET_KEY = env('SECRET_KEY', default='clave-insegura-ci-test')
 DEBUG = True
-
-ALLOWED_HOSTS = env.list('ALLOWED_HOST')
-
+ALLOWED_HOSTS = env.list('ALLOWED_HOST', default=['127.0.0.1','localhost'])
 
 # Application definition
 
@@ -35,8 +33,10 @@ INSTALLED_APPS = [
     'modulo_principal',
     'punto_venta',
     'rest_framework',
+    'django_filters',
     'rest_framework_simplejwt',
     'corsheaders',
+    
 ]
 
 MIDDLEWARE = [
@@ -52,7 +52,9 @@ MIDDLEWARE = [
 
 
 CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:5173",
+    "http://localhost:8000",
+    "http://localhost:5173",
+    "http://localhost:3000",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -131,16 +133,22 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL ='modulo_principal.UsuarioCustom'
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'modulo_principal.authentication.CustomJWTAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
-}
+        'DEFAULT_AUTHENTICATION_CLASSES': (
+            'modulo_principal.authentication.CustomJWTAuthentication',
+        ),
+        'DEFAULT_PERMISSION_CLASSES': (
+            'rest_framework.permissions.IsAuthenticated',
+        ),
+        'DEFAULT_PAGINATION_CLASS': 
+            'rest_framework.pagination.PageNumberPagination',
+            'PAGE_SIZE':10, 
+
+        'EXCEPTION_HANDLER':'modulo_principal.utils.exceptions.custom_exception_handler',
+        
+    }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
