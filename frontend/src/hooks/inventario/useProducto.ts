@@ -13,6 +13,9 @@ export const useProductos = (filters: Record<string, any> = {}) => {
     const [totalPages, setTotalPages] = useState(0);
     const PAGE_SIZE = 10;
 
+    // 🔥 SOLUCIÓN: Creamos una "firma" de texto de los filtros para comparar contenido, no referencias.
+    const filtersString = JSON.stringify(filters);
+
     // 2. fetchProductos ahora depende de 'page' y 'filters'
     const fetchProductos = useCallback(async (currentPage: number, currentFilters: any) => {
         setLoading(true);
@@ -32,14 +35,23 @@ export const useProductos = (filters: Record<string, any> = {}) => {
     }, []);
 
     // 3. Resetear a página 1 cuando el usuario cambia los filtros
+    // 🔥 CAMBIO: Dependemos del string, no del objeto
     useEffect(() => {
         setPage(1);
-    }, [filters]);
+    }, [filtersString]);
 
     // 4. Efecto principal: reacciona a página y filtros
+    // 🔥 CAMBIO: Usamos filtersString en la dependencia para romper el bucle infinito
     useEffect(() => {
+        // Pasamos 'filters' (el objeto original) a la función, pero el efecto solo se dispara
+        // si 'filtersString' cambia.
         fetchProductos(page, filters);
-    }, [page, filters, fetchProductos]);
+        
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [page, filtersString, fetchProductos]); 
+
+
+    // --- TUS FUNCIONES AUXILIARES (INTACTAS) ---
 
     const crearProducto = async (prod: Producto) => {
         try {

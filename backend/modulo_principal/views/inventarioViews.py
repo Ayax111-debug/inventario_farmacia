@@ -48,7 +48,7 @@ class ProductoViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     
     # 1. Búsqueda Texto (Smart Filter input texto)
-    search_fields = ['nombre', 'codigo_serie', 'laboratorio__nombre', 'descripcion']
+    search_fields = ['nombre', 'codigo_serie', 'laboratorio__nombre', 'descripcion','cantidad_mg','cantidad_capsulas']
     
     # 2. Filtros Estructurados (Smart Filter selects/rangos)
     # Usamos diccionario para permitir rangos (gte=desde, lte=hasta)
@@ -56,7 +56,9 @@ class ProductoViewSet(viewsets.ModelViewSet):
         'laboratorio': ['exact'],
         'activo': ['exact'],
         'es_bioequivalente': ['exact'],
-        'cantidad_mg': ['gte', 'lte', 'exact'], # Permite filtrar "más de 500mg"
+        'cantidad_mg': ['gte', 'lte', 'exact'],
+        'cantidad_capsulas':['gte','lte','exact'] 
+        # Permite filtrar "más de 500mg"
     }
     
     # 3. Ordenamiento manual (Click en cabeceras de tabla)

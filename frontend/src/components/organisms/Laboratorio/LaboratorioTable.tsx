@@ -21,7 +21,7 @@ export const LaboratorioTable = ({ data, onDelete, onEdit}: Props) => {
     }
 
     return (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+        <div className="bg-white rounded-sm shadow-sm overflow-hidden border border-gray-200">
             <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">

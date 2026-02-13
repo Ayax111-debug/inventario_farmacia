@@ -24,7 +24,8 @@ export const ProductoForm = ({ onSubmit, initialData, onCancel, listaLaboratorio
         es_bioequivalente: false,
         codigo_serie: '',
         precio_venta: 0,
-        activo: true
+        activo: true,
+        stock_total: 0,
     };
 
     const [form, setForm] = useState<Producto>(initialState);
@@ -107,7 +108,7 @@ export const ProductoForm = ({ onSubmit, initialData, onCancel, listaLaboratorio
     `;
 
     return (
-        <div className="bg-white p-6 rounded-lg mb-6">
+        <div className="bg-white p-6 rounded-sm mb-6">
             <h2 className="text-xl font-semibold mb-4 text-gray-800">
                 {initialData ? 'Editar Producto' : 'Registrar Nuevo Producto'}
             </h2>

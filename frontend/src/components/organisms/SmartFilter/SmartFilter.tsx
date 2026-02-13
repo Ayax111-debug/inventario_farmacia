@@ -31,7 +31,7 @@ export const SmartFilter = ({ config, onFilterChange }: Props) => {
     };
 
     return (
-        <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 mb-6">
+        <div className="bg-white p-5 rounded-sm shadow-sm border border-gray-100 mb-6">
             <div className="flex flex-wrap gap-4 items-end">
                 
                 {/* Renderizado Dinámico de Filtros */}
@@ -115,7 +115,9 @@ export const SmartFilter = ({ config, onFilterChange }: Props) => {
                 })}
 
                 {/* Botón de Limpiar (Solo aparece si hay filtros activos) */}
-                <div className="ml-auto pb-1">
+                
+            </div>
+            <div className="ml-auto pb-1 mt-2 flex justify-start ">
                      <button 
                         onClick={() => { 
                             // Reseteamos visualmente los inputs (truco rápido: resetear el formulario padre si existiera, o recargar)
@@ -133,7 +135,6 @@ export const SmartFilter = ({ config, onFilterChange }: Props) => {
                         Limpiar Filtros
                     </button>
                 </div>
-            </div>
         </div>
     );
 };

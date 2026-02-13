@@ -135,8 +135,8 @@ const LotesPage = () => {
             <div className="max-w-6xl mx-auto p-6">
                 
                 {/* Header */}
-                <div className="flex bg-white p-5 rounded-xl shadow-sm justify-between items-center mb-6">
-                    <h1 className="text-3xl font-bold text-gray-800">Gestión de Lotes</h1>
+                <div className="flex bg-white p-5 rounded-sm shadow-md justify-between items-center mb-6 ">
+                    <h1 className="text-3xl font-bold text-gray-700">Maestro de lotes</h1>
                     <AddButton label='Agregar Lote' onClick={handleCreate}/>
                 </div>
 

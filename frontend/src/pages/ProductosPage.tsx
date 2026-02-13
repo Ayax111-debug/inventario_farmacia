@@ -57,7 +57,18 @@ const ProductosPage = () => {
             key: 'activo', 
             label: 'Estado', 
             type: 'boolean' 
+        },
+        { 
+            key: 'cantidad_mg', 
+            label: 'Miligramos', 
+            type: 'text' 
+        },
+        { 
+            key: 'cantidad_capsulas', 
+            label: 'Capsulas', 
+            type: 'text' 
         }
+       
     ], [laboratorios]);
 
     const handleFilterChange = (newFilters: Record<string, any>) => {
@@ -130,8 +141,8 @@ const ProductosPage = () => {
             <div className="max-w-6xl mx-auto p-6">
                 
                 {/* Header */}
-                <div className="flex bg-white p-5 rounded-xl shadow-sm justify-between items-center mb-6">
-                    <h1 className="text-3xl font-bold text-gray-800">Catálogo de Productos</h1>
+                <div className="flex bg-white p-5 rounded-sm shadow-md justify-between items-center mb-6 border border-gray-100">
+                    <h1 className="text-3xl font-bold text-gray-700">Maestro de productos</h1>
                     <AddButton label='Agregar Producto' onClick={handleCreate}/>
                 </div>
 

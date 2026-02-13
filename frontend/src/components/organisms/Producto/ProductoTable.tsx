@@ -24,16 +24,16 @@ export const ProductoTable = ({ data, onDelete, onEdit }: Props) => {
     }
 
     return (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+        <div className="bg-white rounded-sm shadow-sm overflow-hidden border border-gray-200">
             <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU / Código</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
-                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">SKU / Código</th>
+                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Producto</th>
+                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Precio</th>
+                            <th className="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Estado</th>
+                            <th className="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Acciones</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -63,7 +63,7 @@ export const ProductoTable = ({ data, onDelete, onEdit }: Props) => {
                                 <td className="px-6 py-4 whitespace-nowrap text-center">
                                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                         ${prod.activo 
-                                            ? 'bg-green-100 text-green-800' 
+                                            ? 'bg-green-100 text-green-800 border border-green-400' 
                                             : 'bg-red-100 text-red-800'}`
                                     }>
                                         {prod.activo ? 'Activo' : 'Inactivo'}
@@ -72,9 +72,9 @@ export const ProductoTable = ({ data, onDelete, onEdit }: Props) => {
 
                                 {/* Columna Acciones */}
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <EditButton className='bg-blue-400 text-white hover:bg-blue-200 m-1' onClick={() => (onEdit(prod))}/>
+                                    <EditButton className='bg-blue-400 text-white hover:bg-blue-200 m-1 border border-blue-500' onClick={() => (onEdit(prod))}/>
 
-                                    <DeleteButton className='bg-red-400 text-white hover:bg-red-200'  onClick={() => prod.id && onDelete(prod.id)} />
+                                    <DeleteButton className='bg-red-400 text-white hover:bg-red-200 border border-red-500'  onClick={() => prod.id && onDelete(prod.id)} />
                                 </td>
                             </tr>
                         ))}

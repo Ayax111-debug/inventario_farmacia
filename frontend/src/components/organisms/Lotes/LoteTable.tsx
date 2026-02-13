@@ -42,17 +42,17 @@ export const LoteTable = ({ data, onDelete, onEdit }: Props) => {
     }
 
     return (
-        <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
+        <div className="bg-white rounded-sm shadow-sm overflow-hidden border border-gray-200">
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="bg-gray-50 border-b border-gray-200 text-gray-600 uppercase text-xs tracking-wider">
-                            <th className="p-4 font-semibold">Código / Producto</th>
-                            <th className="p-4 font-semibold">Stock</th>
-                            <th className="p-4 font-semibold">Fechas</th>
-                            <th className="p-4 font-semibold">Vencimiento</th>
-                            <th className="p-4 font-semibold">Condición</th> {/* Nueva Columna */}
-                            <th className="p-4 font-semibold text-right">Acciones</th>
+                            <th className="p-4 font-bold">Código / Producto</th>
+                            <th className="p-4 font-bold">Stock</th>
+                            <th className="p-4 font-bold">Fechas</th>
+                            <th className="p-4 font-bold">Vencimiento</th>
+                            <th className="p-4 font-bold">Condición</th> {/* Nueva Columna */}
+                            <th className="p-4 font-bold text-right">Acciones</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -90,7 +90,7 @@ export const LoteTable = ({ data, onDelete, onEdit }: Props) => {
                                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${
                                             lote.activo 
                                                 ? 'bg-blue-50 text-blue-700 border-blue-200' 
-                                                : 'bg-gray-100 text-gray-500 border-gray-200'
+                                                : 'bg-gray-100 text-gray-500 border-gray-200' 
                                         }`}>
                                             {lote.activo ? 'Activo' : 'Inactivo'}
                                         </span>
@@ -98,17 +98,18 @@ export const LoteTable = ({ data, onDelete, onEdit }: Props) => {
                                         {/* Badge Defectuoso */}
                                         {lote.defectuoso && (
                                             <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200 flex items-center gap-1">
-                                                ⚠ Defectuoso
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
+                                                    <path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd" />
+                                                 </svg>
+                                                 <p>defectuoso</p>
                                             </span>
                                         )}
                                     </div>
                                 </td>
 
-                                <td className="p-4 text-right">
-                                    <div className="flex justify-end gap-2">
-                                        <EditButton onClick={() => onEdit(lote)}/>
-                                        <DeleteButton onClick={() => lote.id && onDelete(lote.id)} />
-                                    </div>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <EditButton className='bg-blue-400 m-1 text-white hover:bg-blue-200  border border-blue-500' onClick={() => onEdit(lote)}/>
+                                    <DeleteButton className='bg-red-400 text-white hover:bg-red-200 border border-red-500' onClick={() => lote.id && onDelete(lote.id)} />
                                 </td>
                             </tr>
                         ))}

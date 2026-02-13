@@ -10,6 +10,7 @@ export interface Producto{
     codigo_serie: string;
     precio_venta: number;
     activo: boolean;
+    stock_total: number;
 }
 export interface PaginatedResponse<T> {
     count: number;

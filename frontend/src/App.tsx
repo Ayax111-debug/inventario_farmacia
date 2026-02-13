@@ -6,6 +6,8 @@ import { ComponentsShowcase } from './pages/ComponentsShowcase';
 import { authService } from './services/auth.service'; // Tu función que llama a /api/me/
 import ProductosPage from './pages/ProductosPage';
 import LotesPage from './pages/LotesPages';
+import POSPage from './pages/POSpage';
+
 
 function App() {
   const [user, setUser] = useState(null);
@@ -20,8 +22,6 @@ function App() {
       setUser(null);
     }
   };
-
-
 
 
   useEffect(() => {
@@ -64,6 +64,11 @@ function App() {
         <Route 
           path='/showcase' 
           element={user ? <ComponentsShowcase /> : <Navigate to="/login" />} 
+        />
+
+        <Route
+        path='/pos'
+        element={user? <POSPage/> : <Navigate to="/login"/>}
         />
 
         <Route 

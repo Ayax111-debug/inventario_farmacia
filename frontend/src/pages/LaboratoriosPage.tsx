@@ -39,21 +39,21 @@ const LaboratoriosPage = () => {
     };
 
     const handleSubmit = async (formData: Laboratorio) => {
-        let success = false;
+       
         if (editingLab && editingLab.id) {
-            success = await actualizarLaboratorio(editingLab.id, formData);
+            await actualizarLaboratorio(editingLab.id, formData);
         } else {
-            success = await crearLaboratorio(formData);
+            await crearLaboratorio(formData);
         }
-        if (success) handleCloseModal();
-        return success;
+        handleCloseModal();
+        
     };
 
     return (
         <MainTemplate>
             <div className="max-w-6xl mx-auto p-6">
-                <div className="flex bg-white p-5 rounded-xl shadow-sm justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-800">Laboratorios</h1>
+                <div className="flex bg-white p-5 rounded-sm shadow-md justify-between items-center mb-8">
+                    <h1 className="text-3xl font-bold text-gray-700">Maestro de laboratorios</h1>
                     <AddButton label='Agregar Laboratorio' onClick={handleCreate}/>
                 </div>
 
